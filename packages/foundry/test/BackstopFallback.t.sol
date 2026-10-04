@@ -395,6 +395,7 @@ contract BackstopFallbackTest is BackstopBase {
         feed.set(HBAR_USD, block.timestamp);
         BackstopDesk.Quote memory q = _quote(19_500_000, 1);
         bytes memory sig = _sign(makerPk, id, q);
+        vm.prank(taker);
         vm.expectRevert(abi.encodeWithSelector(BackstopDesk.OrderExpired.selector, id));
         desk.fillWithQuote(id, q, sig);
     }

@@ -6,13 +6,14 @@ import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
 import { BackstopDesk } from "../contracts/BackstopDesk.sol";
 import { MockHtsToken } from "./mocks/MockHtsToken.sol";
-import { MockHss } from "./mocks/MockHederaSystem.sol";
+import { MockHss, MockHtsFees } from "./mocks/MockHederaSystem.sol";
 import { MockPool, MockRouter, MockFactory, MockWhbarHelper, MockAggregator } from "./mocks/MockSaucerSwap.sol";
 
 /// Fixture for every BackstopDesk test: the Hedera Schedule Service etched at 0x16b, WHBAR, USDC and SAUCE at fixed
 /// addresses, a priced SaucerSwap V2 pool per pair (WHBAR/USDC 0.30%, WHBAR/SAUCE 0.30%), a router that trades at
 /// those prices, a Chainlink feed, a taker, and a maker holding a signing key and an allowance for the desk.
 abstract contract BackstopBase is Test {
+    address internal constant HTS_ADDR = address(0x167);
     address internal constant HSS_ADDR = address(0x16b);
     address internal constant USDC_ADDR = address(0x1549);
     address internal constant WHBAR_ADDR = address(0x3ad2);
@@ -55,6 +56,7 @@ abstract contract BackstopBase is Test {
     MockWhbarHelper internal helper;
     MockAggregator internal feed;
     MockHss internal hss = MockHss(HSS_ADDR);
+    MockHtsFees internal htsFees = MockHtsFees(HTS_ADDR);
 
     BackstopDesk internal desk;
 
@@ -63,6 +65,7 @@ abstract contract BackstopBase is Test {
         vm.chainId(296);
         maker = vm.addr(makerPk);
         vm.etch(HSS_ADDR, address(new MockHss()).code);
+        vm.etch(HTS_ADDR, address(new MockHtsFees()).code);
 
         deployCodeTo("MockHtsToken.sol:MockHtsToken", abi.encode("Wrapped HBAR", "WHBAR", uint8(8)), WHBAR_ADDR);
         deployCodeTo("MockHtsToken.sol:MockHtsToken", abi.encode("SaucerSwap", "SAUCE", uint8(6)), SAUCE_ADDR);
@@ -162,8 +165,9 @@ abstract contract BackstopBase is Test {
 
     function _fill(uint256 id, uint256 amountOut, uint256 nonce) internal {
         BackstopDesk.Quote memory q = _quote(amountOut, nonce);
-        vm.prank(keeper);
-        desk.fillWithQuote(id, q, _sign(makerPk, id, q));
+        bytes memory sig = _sign(makerPk, id, q); // reads the desk, so it must come before the prank
+        vm.prank(taker);
+        desk.fillWithQuote(id, q, sig);
     }
 
     /// Plays the network's part: warps to a recorded schedule's second and runs the call as the scheduling contract

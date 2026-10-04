@@ -7,6 +7,7 @@ import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { LowLevelCall } from "@openzeppelin/contracts/utils/LowLevelCall.sol";
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
+import { IHederaTokenService } from "./interfaces/IHederaTokenService.sol";
 import { IHederaScheduleService } from "./interfaces/IHederaScheduleService.sol";
 import { IHRC719 } from "./interfaces/IHRC719.sol";
 import { ISaucerSwapV2Router, ISaucerSwapV2Factory, IWhbarHelper } from "./interfaces/ISaucerSwapV2.sol";
@@ -68,6 +69,7 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
         uint256 scheduledGas;
     }
 
+    IHederaTokenService private constant HTS = IHederaTokenService(address(0x167));
     IHederaScheduleService private constant HSS = IHederaScheduleService(address(0x16b));
     int64 private constant SUCCESS = 22;
     int64 private constant TOKEN_ALREADY_ASSOCIATED = 194;
@@ -108,7 +110,9 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
     /// @notice tokenIn held in escrow per token: open orders plus unclaimed refunds.
     mapping(address token => uint256) public escrowed;
     mapping(address token => bool) public associated;
-    mapping(address maker => mapping(uint256 nonce => bool)) public nonceUsed;
+    /// @notice Permit2-style unordered nonces: bit `nonce % 256` of word `nonce / 256`. A set bit is a used or cancelled
+    /// nonce.
+    mapping(address maker => mapping(uint256 wordPos => uint256)) public nonceBitmap;
     mapping(uint256 id => Order) private _orders;
 
     event OrderPosted(
@@ -133,7 +137,7 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
     event Rearmed(uint256 indexed id, address schedule, uint256 fallbackAt);
     event FallbackSkipped(uint256 indexed id, Status status);
     event FuelRefundFailed(uint256 indexed id, address taker, uint256 amount);
-    event NonceInvalidated(address indexed maker, uint256 nonce);
+    event NoncesCancelled(address indexed maker, uint256 wordPos, uint256 mask);
     event Associated(address indexed token);
 
     error BadConfig();
@@ -156,6 +160,9 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
     error StaleOracle(uint256 updatedAt);
     error BadOraclePrice(int256 answer);
     error OnlyTaker();
+    error CustomFees(address token);
+    error UnexpectedReceived(uint256 expected, uint256 received);
+    error Insolvent(address token);
     error OnlySelf();
     error NothingToClaim(uint256 id);
     error CannotRearm(uint256 id);
@@ -211,22 +218,10 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
         if (ttl < MIN_TTL || ttl > MAX_TTL) revert BadTtl(ttl);
         if (tokenIn == tokenOut) revert SameToken();
         if (factory.getPool(tokenIn, tokenOut, fee) == address(0)) revert NoPool(tokenIn, tokenOut, fee);
+        _requireNoCustomFees(tokenIn);
+        _requireNoCustomFees(tokenOut);
 
-        uint256 fuel = msg.value;
-        if (tokenIn == whbar) {
-            fuel = msg.value > amountIn ? msg.value - amountIn : 0;
-        }
-        if (fuel < fuelPerOrder) {
-            revert InsufficientValue(msg.value, tokenIn == whbar ? amountIn + fuelPerOrder : fuelPerOrder);
-        }
-
-        _associate(tokenIn);
-        if (tokenIn == whbar) {
-            whbarHelper.deposit{ value: amountIn }();
-        } else if (!IERC20(tokenIn).transferFrom(msg.sender, address(this), amountIn)) {
-            revert TransferFailed(tokenIn);
-        }
-        escrowed[tokenIn] += amountIn;
+        uint256 fuel = _escrowIn(tokenIn, amountIn);
 
         id = ++orderCount;
         // forge-lint: disable-next-line(unsafe-typecast)
@@ -247,9 +242,12 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
     }
 
     /// @notice Settles an open order with a maker's signed quote. The maker must have approved this desk for
-    /// `amountOut` of tokenOut and hold it; the taker must be associated with tokenOut. Anyone may submit the quote.
+    /// `amountOut` of tokenOut and hold it; the taker must be associated with tokenOut. Only the order's taker may submit it.
     function fillWithQuote(uint256 id, Quote calldata quote, bytes calldata signature) external nonReentrant {
         Order storage o = _openOrder(id);
+        // Quotes are public on the topic. If anyone could submit one, a stranger could settle an order with the worst
+        // valid quote on the board; only the taker picks which maker wins.
+        if (msg.sender != o.taker) revert OnlyTaker();
         // forge-lint: disable-next-line(block-timestamp)
         if (block.timestamp >= o.expiry) revert OrderExpired(id);
         // forge-lint: disable-next-line(block-timestamp)
@@ -258,18 +256,19 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
 
         (address signer, ECDSA.RecoverError err,) = ECDSA.tryRecover(_digest(id, quote), signature);
         if (err != ECDSA.RecoverError.NoError || signer != quote.maker || signer == address(0)) revert BadSignature();
-        if (nonceUsed[signer][quote.nonce]) revert NonceAlreadyUsed(signer, quote.nonce);
+        if (nonceUsed(signer, quote.nonce)) revert NonceAlreadyUsed(signer, quote.nonce);
 
         uint256 floor = _oracleFloor(o);
         if (quote.amountOut < floor) revert QuoteOutsideBand(quote.amountOut, floor);
 
-        nonceUsed[signer][quote.nonce] = true;
+        nonceBitmap[signer][quote.nonce >> 8] |= _nonceBit(quote.nonce);
         o.status = Status.Filled;
         escrowed[o.tokenIn] -= o.amountIn;
         address taker = o.taker;
 
         if (!IERC20(o.tokenOut).transferFrom(signer, taker, quote.amountOut)) revert TransferFailed(o.tokenOut);
         if (!IERC20(o.tokenIn).transfer(signer, o.amountIn)) revert TransferFailed(o.tokenIn);
+        _requireCovered(o.tokenIn);
 
         _deleteSchedule(id, o);
         uint256 fuel = o.fuel;
@@ -292,6 +291,7 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
         uint256 fuel = o.fuel;
         o.fuel = 0;
         if (!IERC20(o.tokenIn).transfer(o.taker, o.amountIn)) revert TransferFailed(o.tokenIn);
+        _requireCovered(o.tokenIn);
         if (fuel != 0) {
             if (!LowLevelCall.callNoReturn(o.taker, fuel, "")) revert TransferFailed(address(0));
         }
@@ -364,6 +364,7 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
         o.claimable = 0;
         escrowed[o.tokenIn] -= amount;
         if (!IERC20(o.tokenIn).transfer(o.taker, amount)) revert TransferFailed(o.tokenIn);
+        _requireCovered(o.tokenIn);
         emit Claimed(id, amount);
     }
 
@@ -380,13 +381,19 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
         emit Rearmed(id, schedule, fallbackAt);
     }
 
-    /// @notice Withdraws a maker's quote nonce so a signed quote can no longer be filled.
-    function invalidateNonce(uint256 nonce) external {
-        nonceUsed[msg.sender][nonce] = true;
-        emit NonceInvalidated(msg.sender, nonce);
+    /// @notice Cancels signed quotes in bulk: every bit set in `mask` withdraws nonce `wordPos * 256 + bit`, so one
+    /// transaction can retire up to 256 quotes.
+    function cancelNonces(uint256 wordPos, uint256 mask) external {
+        nonceBitmap[msg.sender][wordPos] |= mask;
+        emit NoncesCancelled(msg.sender, wordPos, mask);
     }
 
     // ---------------------------------------------------------------- views
+
+    /// @notice Whether `maker`'s nonce is spent or cancelled.
+    function nonceUsed(address maker, uint256 nonce) public view returns (bool) {
+        return nonceBitmap[maker][nonce >> 8] & _nonceBit(nonce) != 0;
+    }
 
     function getOrder(uint256 id) external view returns (Order memory) {
         return _orders[id];
@@ -414,6 +421,10 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
     }
 
     // ---------------------------------------------------------------- internals
+
+    function _nonceBit(uint256 nonce) private pure returns (uint256) {
+        return uint256(1) << (nonce & 0xff);
+    }
 
     function _openOrder(uint256 id) private view returns (Order storage o) {
         o = _orders[id];
@@ -478,6 +489,48 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
     function _holdForClaim(Order storage o) private {
         o.claimable = o.amountIn;
         escrowed[o.tokenIn] += o.amountIn;
+    }
+
+    /// Checks the order's fuel, associates the desk with tokenIn, pulls the escrow and returns the fuel. What arrives is
+    /// measured, not trusted: a token that delivers less than it was asked to move cannot back an escrow.
+    function _escrowIn(address tokenIn, uint256 amountIn) private returns (uint256 fuel) {
+        fuel = msg.value;
+        if (tokenIn == whbar) {
+            fuel = msg.value > amountIn ? msg.value - amountIn : 0;
+        }
+        if (fuel < fuelPerOrder) {
+            revert InsufficientValue(msg.value, tokenIn == whbar ? amountIn + fuelPerOrder : fuelPerOrder);
+        }
+
+        _associate(tokenIn);
+        uint256 heldBefore = IERC20(tokenIn).balanceOf(address(this));
+        if (tokenIn == whbar) {
+            whbarHelper.deposit{ value: amountIn }();
+        } else if (!IERC20(tokenIn).transferFrom(msg.sender, address(this), amountIn)) {
+            revert TransferFailed(tokenIn);
+        }
+        uint256 received = IERC20(tokenIn).balanceOf(address(this)) - heldBefore;
+        if (received != amountIn) revert UnexpectedReceived(amountIn, received);
+        escrowed[tokenIn] += amountIn;
+    }
+
+    /// A token with a custom fee schedule moves a different amount than it is told to, so the desk's books would drift
+    /// from its balances. Refuse it at the door; WHBAR, USDC and SAUCE carry none and have no fee schedule key.
+    function _requireNoCustomFees(address token) private {
+        (
+            int64 rc,
+            IHederaTokenService.FixedFee[] memory fixedFees,
+            IHederaTokenService.FractionalFee[] memory fractionalFees,
+            IHederaTokenService.RoyaltyFee[] memory royaltyFees
+        ) = HTS.getTokenCustomFees(token);
+        if (rc != SUCCESS) revert HtsCallFailed(rc);
+        if (fixedFees.length + fractionalFees.length + royaltyFees.length != 0) revert CustomFees(token);
+    }
+
+    /// After a payout the desk must still hold everything it owes. A transfer that cost the desk more than it
+    /// delivered would be paid out of other orders' escrow; revert instead.
+    function _requireCovered(address token) private view {
+        if (IERC20(token).balanceOf(address(this)) < escrowed[token]) revert Insolvent(token);
     }
 
     function _associate(address token) private {

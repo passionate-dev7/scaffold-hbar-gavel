@@ -69,7 +69,7 @@ contract MockHtsToken is ERC20, IHRC719 {
         return super.approve(spender, value);
     }
 
-    function transferFrom(address from, address to, uint256 value) public override returns (bool) {
+    function transferFrom(address from, address to, uint256 value) public virtual override returns (bool) {
         if (allowance(from, msg.sender) < value || balanceOf(from) < value) {
             if (quietFailure) return false;
             revert();

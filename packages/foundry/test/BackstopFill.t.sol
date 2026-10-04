@@ -27,6 +27,12 @@ contract BackstopFillTest is BackstopBase {
         id = _post();
     }
 
+    /// The taker submits the quote it picked.
+    function _submit(uint256 orderId, BackstopDesk.Quote memory q, bytes memory sig) internal {
+        vm.prank(taker);
+        desk.fillWithQuote(orderId, q, sig);
+    }
+
     // ------------------------------------------------------------ settlement
 
     function test_fill_paysTheTakerAndTheMakerAtomically() public {
@@ -67,12 +73,36 @@ contract BackstopFillTest is BackstopBase {
         assertEq(desk.getOrder(id).fuel, 0);
     }
 
-    function test_fill_anyoneMaySubmitTheQuote() public {
+    function test_fill_onlyTheTakerMaySubmitAQuote() public {
         BackstopDesk.Quote memory q = _quote(19_500_000, 1);
         bytes memory sig = _sign(makerPk, id, q);
-        vm.prank(makeAddr("stranger"));
+        address stranger = makeAddr("stranger");
+        vm.prank(stranger);
+        vm.expectRevert(BackstopDesk.OnlyTaker.selector);
         desk.fillWithQuote(id, q, sig);
+        vm.prank(maker);
+        vm.expectRevert(BackstopDesk.OnlyTaker.selector);
+        desk.fillWithQuote(id, q, sig);
+        vm.prank(keeper);
+        vm.expectRevert(BackstopDesk.OnlyTaker.selector);
+        desk.fillWithQuote(id, q, sig);
+        assertEq(uint8(_status(id)), uint8(BackstopDesk.Status.Open), "no outsider settled the order");
+        assertFalse(desk.nonceUsed(maker, 1), "and no nonce was burned");
+        _submit(id, q, sig);
         assertEq(uint8(_status(id)), uint8(BackstopDesk.Status.Filled));
+    }
+
+    /// The worst valid quote on a public board is still valid. Taker-only submission is what stops a stranger from
+    /// settling an order with it while a better quote is on its way.
+    function test_fill_aStrangerCannotSettleWithTheWorstQuoteOnTheBoard() public {
+        BackstopDesk.Quote memory worst = _quote(MIN_OUT + 500_000, 1); // valid: above minOut and inside the band
+        bytes memory sig = _sign(makerPk, id, worst);
+        vm.prank(makeAddr("frontRunner"));
+        vm.expectRevert(BackstopDesk.OnlyTaker.selector);
+        desk.fillWithQuote(id, worst, sig);
+        BackstopDesk.Quote memory best = _quote(20_500_000, 2);
+        _submit(id, best, _sign(makerPk, id, best));
+        assertEq(usdc.balanceOf(taker), 20_500_000, "the taker chose the best quote");
     }
 
     function test_fill_aSecondFillOfTheSameOrderReverts() public {
@@ -80,14 +110,14 @@ contract BackstopFillTest is BackstopBase {
         BackstopDesk.Quote memory q = _quote(19_600_000, 2);
         bytes memory sig = _sign(makerPk, id, q);
         vm.expectRevert(abi.encodeWithSelector(BackstopDesk.NotOpen.selector, id, BackstopDesk.Status.Filled));
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
     }
 
     function test_fill_unknownOrderReverts() public {
         BackstopDesk.Quote memory q = _quote(19_500_000, 1);
         bytes memory sig = _sign(makerPk, 77, q);
         vm.expectRevert(abi.encodeWithSelector(BackstopDesk.UnknownOrder.selector, 77));
-        desk.fillWithQuote(77, q, sig);
+        _submit(77, q, sig);
     }
 
     // ------------------------------------------------------------ EIP-712
@@ -96,7 +126,7 @@ contract BackstopFillTest is BackstopBase {
         BackstopDesk.Quote memory q = _quote(19_500_000, 1);
         bytes memory sig = _sign(0xB0B, id, q);
         vm.expectRevert(BackstopDesk.BadSignature.selector);
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
     }
 
     function test_signature_aQuoteNamingAnotherMakerIsRejected() public {
@@ -106,7 +136,7 @@ contract BackstopFillTest is BackstopBase {
         bytes memory sig = _sign(makerPk, id, q);
         q.maker = keeper;
         vm.expectRevert(BackstopDesk.BadSignature.selector);
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
     }
 
     function test_signature_tamperedAmountIsRejected() public {
@@ -114,7 +144,7 @@ contract BackstopFillTest is BackstopBase {
         bytes memory sig = _sign(makerPk, id, q);
         q.amountOut = 19_400_000;
         vm.expectRevert(BackstopDesk.BadSignature.selector);
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
     }
 
     function test_signature_tamperedDeadlineAndNonceAreRejected() public {
@@ -122,20 +152,23 @@ contract BackstopFillTest is BackstopBase {
         bytes memory sig = _sign(makerPk, id, q);
         q.deadline += 1;
         vm.expectRevert(BackstopDesk.BadSignature.selector);
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
         q.deadline -= 1;
         q.nonce = 2;
         vm.expectRevert(BackstopDesk.BadSignature.selector);
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
     }
 
+    /// The signed digest names the order, so a quote for order A cannot be replayed onto order B even by the taker
+    /// who owns both.
     function test_signature_isBoundToTheOrder() public {
         uint256 other = _post();
         BackstopDesk.Quote memory q = _quote(19_500_000, 1);
         bytes memory sig = _sign(makerPk, id, q);
         vm.expectRevert(BackstopDesk.BadSignature.selector);
-        desk.fillWithQuote(other, q, sig);
-        desk.fillWithQuote(id, q, sig);
+        _submit(other, q, sig);
+        assertEq(uint8(_status(other)), uint8(BackstopDesk.Status.Open));
+        _submit(id, q, sig);
     }
 
     function test_signature_isBoundToTheDesk() public {
@@ -143,7 +176,7 @@ contract BackstopFillTest is BackstopBase {
         BackstopDesk.Quote memory q = _quote(19_500_000, 1);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(makerPk, other.quoteDigest(id, q));
         vm.expectRevert(BackstopDesk.BadSignature.selector);
-        desk.fillWithQuote(id, q, abi.encodePacked(r, s, v));
+        _submit(id, q, abi.encodePacked(r, s, v));
     }
 
     function test_signature_isBoundToTheChain() public {
@@ -151,15 +184,15 @@ contract BackstopFillTest is BackstopBase {
         bytes memory sig = _sign(makerPk, id, q);
         vm.chainId(295);
         vm.expectRevert(BackstopDesk.BadSignature.selector);
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
     }
 
     function test_signature_malformedBytesAreRejected() public {
         BackstopDesk.Quote memory q = _quote(19_500_000, 1);
         vm.expectRevert(BackstopDesk.BadSignature.selector);
-        desk.fillWithQuote(id, q, hex"1234");
+        _submit(id, q, hex"1234");
         vm.expectRevert(BackstopDesk.BadSignature.selector);
-        desk.fillWithQuote(id, q, new bytes(65));
+        _submit(id, q, new bytes(65));
     }
 
     function test_signature_highSValueIsRejected() public {
@@ -169,7 +202,7 @@ contract BackstopFillTest is BackstopBase {
         bytes32 highS = bytes32(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141 - uint256(s));
         uint8 flipped = v == 27 ? 28 : 27;
         vm.expectRevert(BackstopDesk.BadSignature.selector);
-        desk.fillWithQuote(id, q, abi.encodePacked(r, highS, flipped));
+        _submit(id, q, abi.encodePacked(r, highS, flipped));
     }
 
     /// A signature produced outside Solidity (viem signTypedData, scripts-js/sign-quote.mjs) recovers on the desk.
@@ -197,7 +230,7 @@ contract BackstopFillTest is BackstopBase {
         BackstopDesk.Quote memory q = _quote(19_500_000, 7);
         bytes memory sig = _sign(makerPk, second, q);
         vm.expectRevert(abi.encodeWithSelector(BackstopDesk.NonceAlreadyUsed.selector, maker, 7));
-        desk.fillWithQuote(second, q, sig);
+        _submit(second, q, sig);
     }
 
     function test_nonce_aRevertedFillDoesNotBurnIt() public {
@@ -206,28 +239,73 @@ contract BackstopFillTest is BackstopBase {
         BackstopDesk.Quote memory q = _quote(19_500_000, 5);
         bytes memory sig = _sign(makerPk, id, q);
         vm.expectRevert();
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
         assertFalse(desk.nonceUsed(maker, 5));
         vm.prank(maker);
         usdc.approve(address(desk), type(uint256).max);
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
         assertTrue(desk.nonceUsed(maker, 5));
     }
 
-    function test_nonce_makerCanInvalidateAQuote() public {
+    function test_nonce_makerCanCancelAQuote() public {
         BackstopDesk.Quote memory q = _quote(19_500_000, 9);
         bytes memory sig = _sign(makerPk, id, q);
         vm.expectEmit(true, false, false, true);
-        emit BackstopDesk.NonceInvalidated(maker, 9);
+        emit BackstopDesk.NoncesCancelled(maker, 0, 1 << 9);
         vm.prank(maker);
-        desk.invalidateNonce(9);
+        desk.cancelNonces(0, 1 << 9);
+        assertTrue(desk.nonceUsed(maker, 9));
         vm.expectRevert(abi.encodeWithSelector(BackstopDesk.NonceAlreadyUsed.selector, maker, 9));
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
     }
 
-    function test_nonce_invalidatingIsPerMaker() public {
+    function test_nonce_bulkCancelRetiresManyQuotesInOneTransaction() public {
+        // Nonces 256 to 511 are word 1; cancel bits 0, 3 and 255 and leave the rest.
+        uint256 mask = (1 << 0) | (1 << 3) | (1 << 255);
+        vm.prank(maker);
+        desk.cancelNonces(1, mask);
+        assertEq(desk.nonceBitmap(maker, 1), mask);
+        assertTrue(desk.nonceUsed(maker, 256));
+        assertTrue(desk.nonceUsed(maker, 259));
+        assertTrue(desk.nonceUsed(maker, 511));
+        assertFalse(desk.nonceUsed(maker, 257));
+        assertFalse(desk.nonceUsed(maker, 510));
+        assertFalse(desk.nonceUsed(maker, 3), "word 0 is untouched");
+        BackstopDesk.Quote memory q = _quote(19_500_000, 259);
+        bytes memory sig = _sign(makerPk, id, q);
+        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.NonceAlreadyUsed.selector, maker, 259));
+        _submit(id, q, sig);
+        _fill(id, 19_500_000, 257); // a nonce the mask left alone still fills
+        assertEq(uint8(_status(id)), uint8(BackstopDesk.Status.Filled));
+    }
+
+    function test_nonce_wordBoundariesAreIndependent() public {
+        _fill(id, 19_500_000, 255);
+        assertTrue(desk.nonceUsed(maker, 255));
+        assertFalse(desk.nonceUsed(maker, 256));
+        assertFalse(desk.nonceUsed(maker, 254));
+        uint256 second = _post();
+        _fill(second, 19_500_000, 256);
+        assertEq(desk.nonceBitmap(maker, 0), 1 << 255);
+        assertEq(desk.nonceBitmap(maker, 1), 1);
+        uint256 third = _post();
+        BackstopDesk.Quote memory q = _quote(19_500_000, 256);
+        bytes memory sig = _sign(makerPk, third, q);
+        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.NonceAlreadyUsed.selector, maker, 256));
+        _submit(third, q, sig);
+    }
+
+    function test_nonce_hugeNonceDoesNotCollideWithLowOnes() public {
+        uint256 huge = type(uint256).max;
+        _fill(id, 19_500_000, huge);
+        assertTrue(desk.nonceUsed(maker, huge));
+        assertFalse(desk.nonceUsed(maker, huge - 1));
+        assertFalse(desk.nonceUsed(maker, 255));
+    }
+
+    function test_nonce_cancellingIsPerMaker() public {
         vm.prank(keeper);
-        desk.invalidateNonce(1);
+        desk.cancelNonces(0, type(uint256).max);
         _fill(id, 19_500_000, 1);
     }
 
@@ -237,14 +315,14 @@ contract BackstopFillTest is BackstopBase {
         vm.warp(q.deadline + 1);
         feed.set(HBAR_USD, block.timestamp);
         vm.expectRevert(abi.encodeWithSelector(BackstopDesk.QuoteExpired.selector, q.deadline));
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
     }
 
     function test_deadline_lastSecondStillFills() public {
         BackstopDesk.Quote memory q = _quote(19_500_000, 1);
         bytes memory sig = _sign(makerPk, id, q);
         vm.warp(q.deadline);
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
         assertEq(uint8(_status(id)), uint8(BackstopDesk.Status.Filled));
     }
 
@@ -255,9 +333,9 @@ contract BackstopFillTest is BackstopBase {
         vm.warp(T0 + TTL);
         feed.set(HBAR_USD, block.timestamp);
         vm.expectRevert(abi.encodeWithSelector(BackstopDesk.OrderExpired.selector, id));
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
         vm.warp(T0 + TTL - 1);
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
     }
 
     // ------------------------------------------------------------ price floors
@@ -266,14 +344,14 @@ contract BackstopFillTest is BackstopBase {
         BackstopDesk.Quote memory q = _quote(MIN_OUT - 1, 1);
         bytes memory sig = _sign(makerPk, id, q);
         vm.expectRevert(abi.encodeWithSelector(BackstopDesk.QuoteBelowMin.selector, MIN_OUT - 1, MIN_OUT));
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
     }
 
     function test_minOut_aQuoteAtTheFloorFills() public {
         vm.prank(taker);
         uint256 sid = desk.postOrder{ value: AMOUNT_IN + FUEL }(WHBAR_ADDR, SAUCE_ADDR, FEE, AMOUNT_IN, 3_900e6, TTL);
         BackstopDesk.Quote memory q = _quote(3_900e6, 1);
-        desk.fillWithQuote(sid, q, _sign(makerPk, sid, q));
+        _submit(sid, q, _sign(makerPk, sid, q));
         assertEq(uint8(_status(sid)), uint8(BackstopDesk.Status.Filled));
     }
 
@@ -290,7 +368,7 @@ contract BackstopFillTest is BackstopBase {
         BackstopDesk.Quote memory q = _quote(19_399_999, 1);
         bytes memory sig = _sign(makerPk, careless, q);
         vm.expectRevert(abi.encodeWithSelector(BackstopDesk.QuoteOutsideBand.selector, 19_399_999, 19_400_000));
-        desk.fillWithQuote(careless, q, sig);
+        _submit(careless, q, sig);
     }
 
     function test_band_admitsAQuoteAtTheFloor() public {
@@ -313,7 +391,7 @@ contract BackstopFillTest is BackstopBase {
         uint256 fresh = desk.postOrder{ value: AMOUNT_IN + FUEL }(WHBAR_ADDR, USDC_ADDR, FEE, AMOUNT_IN, MIN_OUT, TTL);
         bytes memory sig = _sign(makerPk, fresh, q);
         vm.expectRevert(abi.encodeWithSelector(BackstopDesk.StaleOracle.selector, T0));
-        desk.fillWithQuote(fresh, q, sig);
+        _submit(fresh, q, sig);
     }
 
     function test_band_badOraclePriceBlocksTheFill() public {
@@ -321,7 +399,7 @@ contract BackstopFillTest is BackstopBase {
         BackstopDesk.Quote memory q = _quote(19_500_000, 1);
         bytes memory sig = _sign(makerPk, id, q);
         vm.expectRevert(abi.encodeWithSelector(BackstopDesk.BadOraclePrice.selector, int256(0)));
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
     }
 
     function test_band_nonUsdPairsRelyOnMinOutAndIgnoreTheOracle() public {
@@ -331,7 +409,7 @@ contract BackstopFillTest is BackstopBase {
         assertEq(desk.oracleFloor(sid), 0);
         feed.set(0, block.timestamp); // a broken oracle must not block a pair it does not price
         BackstopDesk.Quote memory q = _quote(3_900e6, 1);
-        desk.fillWithQuote(sid, q, _sign(makerPk, sid, q));
+        _submit(sid, q, _sign(makerPk, sid, q));
         assertEq(sauce.balanceOf(taker), 3_900e6);
     }
 
@@ -349,9 +427,9 @@ contract BackstopFillTest is BackstopBase {
         BackstopDesk.Quote memory q = _quote(97e8 - 1, 1);
         bytes memory sig = _sign(makerPk, rid, q);
         vm.expectRevert(abi.encodeWithSelector(BackstopDesk.QuoteOutsideBand.selector, 97e8 - 1, 97e8));
-        desk.fillWithQuote(rid, q, sig);
+        _submit(rid, q, sig);
         q = _quote(97e8, 1);
-        desk.fillWithQuote(rid, q, _sign(makerPk, rid, q));
+        _submit(rid, q, _sign(makerPk, rid, q));
         assertEq(whbar.balanceOf(taker), 97e8);
     }
 
@@ -367,7 +445,7 @@ contract BackstopFillTest is BackstopBase {
         BackstopDesk.Quote memory q = _quote(19_500_000, 1);
         bytes memory sig = _sign(makerPk, id, q);
         vm.expectRevert();
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
         assertEq(uint8(_status(id)), uint8(BackstopDesk.Status.Open), "the order stays open for the next quote");
         assertEq(whbar.balanceOf(address(desk)), AMOUNT_IN);
     }
@@ -379,7 +457,7 @@ contract BackstopFillTest is BackstopBase {
         BackstopDesk.Quote memory q = _quote(19_500_000, 1);
         bytes memory sig = _sign(makerPk, id, q);
         vm.expectRevert();
-        desk.fillWithQuote(id, q, sig);
+        _submit(id, q, sig);
         assertEq(uint8(_status(id)), uint8(BackstopDesk.Status.Open));
     }
 
@@ -392,6 +470,7 @@ contract BackstopFillTest is BackstopBase {
         vm.stopPrank();
         BackstopDesk.Quote memory q = _quote(19_500_000, 1);
         bytes memory sig = _sign(makerPk, lid, q);
+        vm.prank(lonely);
         vm.expectRevert();
         desk.fillWithQuote(lid, q, sig);
         assertEq(uint8(_status(lid)), uint8(BackstopDesk.Status.Open));
@@ -411,6 +490,7 @@ contract BackstopFillTest is BackstopBase {
         bytes memory sig = _sign(makerPk, rid, q);
         vm.expectEmit(true, false, false, true);
         emit BackstopDesk.FuelRefundFailed(rid, address(refuser), FUEL);
+        vm.prank(address(refuser));
         desk.fillWithQuote(rid, q, sig);
         assertEq(uint8(_status(rid)), uint8(BackstopDesk.Status.Filled));
         assertEq(usdc.balanceOf(address(refuser)), 19_500_000);

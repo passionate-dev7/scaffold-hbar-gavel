@@ -107,6 +107,7 @@ contract BackstopHandler is BackstopBase {
         // a taker that is not associated with tokenOut cannot be paid; skip rather than revert
         if (o.tokenOut == USDC_ADDR && !usdc.associated(o.taker)) return;
         if (o.tokenOut == WHBAR_ADDR && !whbar.associated(o.taker)) return;
+        vm.prank(o.taker);
         desk.fillWithQuote(id, q, sig);
         ghostFuelRefunded += o.fuel;
         ++fills;

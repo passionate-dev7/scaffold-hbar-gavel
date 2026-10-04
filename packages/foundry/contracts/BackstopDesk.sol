@@ -2,7 +2,6 @@
 pragma solidity ^0.8.28;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -62,6 +61,7 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
         address whbar;
         address hbarUsdFeed;
         address usdToken;
+        uint8 usdDecimals;
         uint256 maxOracleAge;
         uint256 maxDeviationBps;
         uint256 fuelPerOrder;
@@ -95,7 +95,8 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
     AggregatorV3Interface public immutable hbarUsdFeed;
     /// @notice The USD stablecoin the Chainlink band applies to when paired with WHBAR.
     address public immutable usdToken;
-    uint256 private immutable _usdScale;
+    /// @notice Decimals of `usdToken`, set at deployment because an HTS token cannot be called from a script simulation.
+    uint8 public immutable usdDecimals;
     uint256 public immutable maxOracleAge;
     /// @notice Most a quote may fall below the Chainlink-implied amount, in basis points.
     uint256 public immutable maxDeviationBps;
@@ -162,7 +163,7 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
     constructor(Config memory c) EIP712("Backstop", "1") {
         if (
             c.router == address(0) || c.factory == address(0) || c.whbarHelper == address(0) || c.whbar == address(0)
-                || c.hbarUsdFeed == address(0) || c.usdToken == address(0) || c.maxOracleAge == 0
+                || c.hbarUsdFeed == address(0) || c.usdToken == address(0) || c.usdDecimals > 18 || c.maxOracleAge == 0
                 || c.maxDeviationBps == 0 || c.maxDeviationBps >= BPS || c.fuelPerOrder == 0
                 || c.scheduledGas < MIN_SCHEDULED_GAS || AggregatorV3Interface(c.hbarUsdFeed).decimals() != 8
         ) revert BadConfig();
@@ -172,7 +173,7 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
         whbar = c.whbar;
         hbarUsdFeed = AggregatorV3Interface(c.hbarUsdFeed);
         usdToken = c.usdToken;
-        _usdScale = 10 ** IERC20Metadata(c.usdToken).decimals();
+        usdDecimals = c.usdDecimals;
         maxOracleAge = c.maxOracleAge;
         maxDeviationBps = c.maxDeviationBps;
         fuelPerOrder = c.fuelPerOrder;
@@ -428,9 +429,9 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
         uint256 implied;
         if (o.tokenIn == whbar && o.tokenOut == usdToken) {
             // tinybar (1e8) x USD/HBAR (1e8) -> USD token units
-            implied = Math.mulDiv(o.amountIn, hbarUsd() * _usdScale, 1e16);
+            implied = Math.mulDiv(o.amountIn, hbarUsd() * 10 ** usdDecimals, 1e16);
         } else if (o.tokenIn == usdToken && o.tokenOut == whbar) {
-            implied = Math.mulDiv(o.amountIn, 1e16, hbarUsd() * _usdScale);
+            implied = Math.mulDiv(o.amountIn, 1e16, hbarUsd() * 10 ** usdDecimals);
         } else {
             return 0;
         }

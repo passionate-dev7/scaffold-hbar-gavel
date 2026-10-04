@@ -6,6 +6,8 @@ import { Vm } from "forge-std/Vm.sol";
 import { BackstopDesk } from "../contracts/BackstopDesk.sol";
 import { ISaucerSwapV2Router } from "../contracts/interfaces/ISaucerSwapV2.sol";
 import { MockHss } from "./mocks/MockHederaSystem.sol";
+import { MockHtsToken } from "./mocks/MockHtsToken.sol";
+import { MockPool } from "./mocks/MockSaucerSwap.sol";
 import { BackstopBase } from "./BackstopBase.sol";
 
 /// A router that burns every unit of gas it is given.
@@ -23,6 +25,17 @@ contract ReturnBombRouter is ISaucerSwapV2Router {
         assembly {
             revert(0, 500000)
         }
+    }
+}
+
+/// An HTS token whose transfer is expensive, like a Token Service transfer under load.
+contract HeavyToken is MockHtsToken {
+    constructor() MockHtsToken("Heavy", "HVY", 6) { }
+
+    function transfer(address to, uint256 value) public override returns (bool) {
+        uint256 start = gasleft();
+        while (start - gasleft() < 150_000) { }
+        return super.transfer(to, value);
     }
 }
 
@@ -216,6 +229,31 @@ contract BackstopFallbackTest is BackstopBase {
         assertTrue(ok, "the booked call completes");
         assertEq(uint8(d.getOrder(bid).status), uint8(BackstopDesk.Status.Refunded));
         assertEq(whbar.balanceOf(taker), takerWhbar + AMOUNT_IN);
+    }
+
+    /// The swap burns everything it is given and the refund transfer is expensive: the 63/64 rule alone would leave
+    /// about 45k gas for it. The desk keeps REFUND_RESERVE back, so the refund still lands instead of becoming a claim.
+    function test_fallback_reservesGasForAnExpensiveRefund() public {
+        HeavyToken heavy = new HeavyToken();
+        MockPool heavyPool = new MockPool(address(heavy), USDC_ADDR, FEE);
+        factory.registerPool(address(heavyPool));
+        BackstopDesk.Config memory c = _config();
+        c.router = address(new GasBurnRouter());
+        BackstopDesk d = _deployDesk(c);
+        vm.startPrank(taker);
+        heavy.associate();
+        heavy.mint(taker, 1_000e6);
+        heavy.approve(address(d), 1_000e6);
+        uint256 hid = d.postOrder{ value: FUEL }(address(heavy), USDC_ADDR, FEE, 1_000e6, 1, TTL);
+        vm.stopPrank();
+        MockHss.ScheduledCall memory call = hss.callAt(hss.callCount() - 1);
+        vm.prank(address(d));
+        (bool ok,) = address(d).call{ gas: call.gasLimit }(call.callData);
+        assertTrue(ok);
+        BackstopDesk.Order memory o = d.getOrder(hid);
+        assertEq(uint8(o.status), uint8(BackstopDesk.Status.Refunded));
+        assertEq(o.claimable, 0, "the refund was paid, not parked");
+        assertEq(heavy.balanceOf(taker), 1_000e6);
     }
 
     function test_fallback_aRevertPayloadBombCannotStopTheRefund() public {

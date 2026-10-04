@@ -108,6 +108,7 @@ abstract contract BackstopBase is Test {
             whbar: WHBAR_ADDR,
             hbarUsdFeed: address(feed),
             usdToken: USDC_ADDR,
+            usdDecimals: 6,
             maxOracleAge: MAX_ORACLE_AGE,
             maxDeviationBps: MAX_DEVIATION_BPS,
             fuelPerOrder: FUEL,

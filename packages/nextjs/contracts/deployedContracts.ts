@@ -6,16 +6,16 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-hbar/contract";
 
 const deployedContracts = {
   296: {
-    BasketVault: {
-      address: "0xe72fbf68536d29d3a9e0d897c2ae813b7b279058",
+    BackstopDesk: {
+      address: "0x94b7767b707a0117e94d0e96dacfb2129fbf71dd",
       abi: [
         {
           type: "constructor",
           inputs: [
             {
-              name: "config",
+              name: "c",
               type: "tuple",
-              internalType: "struct BasketVault.Config",
+              internalType: "struct BackstopDesk.Config",
               components: [
                 {
                   name: "router",
@@ -43,32 +43,17 @@ const deployedContracts = {
                   internalType: "address",
                 },
                 {
+                  name: "usdToken",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "usdDecimals",
+                  type: "uint8",
+                  internalType: "uint8",
+                },
+                {
                   name: "maxOracleAge",
-                  type: "uint256",
-                  internalType: "uint256",
-                },
-                {
-                  name: "driftBps",
-                  type: "uint256",
-                  internalType: "uint256",
-                },
-                {
-                  name: "slippageBps",
-                  type: "uint256",
-                  internalType: "uint256",
-                },
-                {
-                  name: "maxTradeBps",
-                  type: "uint256",
-                  internalType: "uint256",
-                },
-                {
-                  name: "scheduledGas",
-                  type: "uint256",
-                  internalType: "uint256",
-                },
-                {
-                  name: "guardLeg",
                   type: "uint256",
                   internalType: "uint256",
                 },
@@ -77,27 +62,15 @@ const deployedContracts = {
                   type: "uint256",
                   internalType: "uint256",
                 },
-              ],
-            },
-            {
-              name: "legConfigs",
-              type: "tuple[]",
-              internalType: "struct BasketVault.LegConfig[]",
-              components: [
                 {
-                  name: "token",
-                  type: "address",
-                  internalType: "address",
+                  name: "fuelPerOrder",
+                  type: "uint256",
+                  internalType: "uint256",
                 },
                 {
-                  name: "pool",
-                  type: "address",
-                  internalType: "address",
-                },
-                {
-                  name: "weightBps",
-                  type: "uint16",
-                  internalType: "uint16",
+                  name: "scheduledGas",
+                  type: "uint256",
+                  internalType: "uint256",
                 },
               ],
             },
@@ -110,33 +83,20 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "DEAD_SHARES",
+          name: "MAX_REARMS",
           inputs: [],
           outputs: [
             {
               name: "",
-              type: "uint256",
-              internalType: "uint256",
+              type: "uint8",
+              internalType: "uint8",
             },
           ],
           stateMutability: "view",
         },
         {
           type: "function",
-          name: "MAX_INTERVAL",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "MIN_INTERVAL",
+          name: "MAX_TTL",
           inputs: [],
           outputs: [
             {
@@ -162,27 +122,141 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "deposit",
-          inputs: [
+          name: "MIN_TTL",
+          inputs: [],
+          outputs: [
             {
-              name: "minShares",
+              name: "",
               type: "uint256",
               internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "RETRY_GRACE",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "associateTokens",
+          inputs: [
+            {
+              name: "tokens",
+              type: "address[]",
+              internalType: "address[]",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "associated",
+          inputs: [
+            {
+              name: "token",
+              type: "address",
+              internalType: "address",
             },
           ],
           outputs: [
             {
-              name: "shares",
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "cancel",
+          inputs: [
+            {
+              name: "id",
               type: "uint256",
               internalType: "uint256",
             },
           ],
-          stateMutability: "payable",
+          outputs: [],
+          stateMutability: "nonpayable",
         },
         {
           type: "function",
-          name: "driftBps",
+          name: "claim",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "eip712Domain",
           inputs: [],
+          outputs: [
+            {
+              name: "fields",
+              type: "bytes1",
+              internalType: "bytes1",
+            },
+            {
+              name: "name",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "version",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "chainId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "verifyingContract",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "salt",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "extensions",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "escrowed",
+          inputs: [
+            {
+              name: "token",
+              type: "address",
+              internalType: "address",
+            },
+          ],
           outputs: [
             {
               name: "",
@@ -207,13 +281,152 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "guardLeg",
+          name: "fallbackFill",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "fillWithQuote",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "quote",
+              type: "tuple",
+              internalType: "struct BackstopDesk.Quote",
+              components: [
+                {
+                  name: "maker",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "amountOut",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "deadline",
+                  type: "uint64",
+                  internalType: "uint64",
+                },
+                {
+                  name: "nonce",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+              ],
+            },
+            {
+              name: "signature",
+              type: "bytes",
+              internalType: "bytes",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "fuelPerOrder",
           inputs: [],
           outputs: [
             {
               name: "",
               type: "uint256",
               internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getOrder",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "tuple",
+              internalType: "struct BackstopDesk.Order",
+              components: [
+                {
+                  name: "taker",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "tokenIn",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "tokenOut",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "fee",
+                  type: "uint24",
+                  internalType: "uint24",
+                },
+                {
+                  name: "amountIn",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "minOut",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "expiry",
+                  type: "uint64",
+                  internalType: "uint64",
+                },
+                {
+                  name: "schedule",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "status",
+                  type: "uint8",
+                  internalType: "enum BackstopDesk.Status",
+                },
+                {
+                  name: "rearms",
+                  type: "uint8",
+                  internalType: "uint8",
+                },
+                {
+                  name: "fuel",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "claimable",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+              ],
             },
           ],
           stateMutability: "view",
@@ -246,96 +459,16 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "holdings",
-          inputs: [],
-          outputs: [
-            {
-              name: "rows",
-              type: "tuple[]",
-              internalType: "struct BasketVault.Holding[]",
-              components: [
-                {
-                  name: "token",
-                  type: "address",
-                  internalType: "address",
-                },
-                {
-                  name: "balance",
-                  type: "uint256",
-                  internalType: "uint256",
-                },
-                {
-                  name: "valueWhbar",
-                  type: "uint256",
-                  internalType: "uint256",
-                },
-                {
-                  name: "targetBps",
-                  type: "uint16",
-                  internalType: "uint16",
-                },
-              ],
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "initialize",
+          name: "invalidateNonce",
           inputs: [
             {
-              name: "name",
-              type: "string",
-              internalType: "string",
-            },
-            {
-              name: "symbol",
-              type: "string",
-              internalType: "string",
+              name: "nonce",
+              type: "uint256",
+              internalType: "uint256",
             },
           ],
           outputs: [],
-          stateMutability: "payable",
-        },
-        {
-          type: "function",
-          name: "legs",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "tuple[]",
-              internalType: "struct BasketVault.Leg[]",
-              components: [
-                {
-                  name: "token",
-                  type: "address",
-                  internalType: "address",
-                },
-                {
-                  name: "pool",
-                  type: "address",
-                  internalType: "address",
-                },
-                {
-                  name: "fee",
-                  type: "uint24",
-                  internalType: "uint24",
-                },
-                {
-                  name: "tokenIsToken0",
-                  type: "bool",
-                  internalType: "bool",
-                },
-                {
-                  name: "weightBps",
-                  type: "uint16",
-                  internalType: "uint16",
-                },
-              ],
-            },
-          ],
-          stateMutability: "view",
+          stateMutability: "nonpayable",
         },
         {
           type: "function",
@@ -365,78 +498,146 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "maxTradeBps",
-          inputs: [],
-          outputs: [
+          name: "nonceUsed",
+          inputs: [
             {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "nav",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "navUsd",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "nextRunAt",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "owner",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
+              name: "maker",
               type: "address",
               internalType: "address",
             },
+            {
+              name: "nonce",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
           ],
           stateMutability: "view",
         },
         {
           type: "function",
-          name: "pendingSchedule",
+          name: "oracleFloor",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "orderCount",
           inputs: [],
           outputs: [
             {
               name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "postOrder",
+          inputs: [
+            {
+              name: "tokenIn",
               type: "address",
               internalType: "address",
+            },
+            {
+              name: "tokenOut",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "fee",
+              type: "uint24",
+              internalType: "uint24",
+            },
+            {
+              name: "amountIn",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "minOut",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "ttl",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "payable",
+        },
+        {
+          type: "function",
+          name: "quoteDigest",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "quote",
+              type: "tuple",
+              internalType: "struct BackstopDesk.Quote",
+              components: [
+                {
+                  name: "maker",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "amountOut",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "deadline",
+                  type: "uint64",
+                  internalType: "uint64",
+                },
+                {
+                  name: "nonce",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+              ],
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
             },
           ],
           stateMutability: "view",
@@ -444,93 +645,13 @@ const deployedContracts = {
         {
           type: "function",
           name: "rearm",
-          inputs: [],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "rebalance",
-          inputs: [],
-          outputs: [
-            {
-              name: "traded",
-              type: "bool",
-              internalType: "bool",
-            },
-          ],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "rebalanceInterval",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "redeem",
           inputs: [
             {
-              name: "shares",
+              name: "id",
               type: "uint256",
               internalType: "uint256",
             },
           ],
-          outputs: [
-            {
-              name: "whbarOut",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "legAmounts",
-              type: "uint256[]",
-              internalType: "uint256[]",
-            },
-          ],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "redeemExcept",
-          inputs: [
-            {
-              name: "shares",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "skipLegsMask",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [
-            {
-              name: "whbarOut",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "legAmounts",
-              type: "uint256[]",
-              internalType: "uint256[]",
-            },
-          ],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "renounceOwnership",
-          inputs: [],
           outputs: [],
           stateMutability: "nonpayable",
         },
@@ -549,13 +670,6 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "runScheduled",
-          inputs: [],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
           name: "scheduledGas",
           inputs: [],
           outputs: [
@@ -569,20 +683,39 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "sharePriceUsd",
+          name: "swapEscrow",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "amountOut",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "usdDecimals",
           inputs: [],
           outputs: [
             {
               name: "",
-              type: "uint256",
-              internalType: "uint256",
+              type: "uint8",
+              internalType: "uint8",
             },
           ],
           stateMutability: "view",
         },
         {
           type: "function",
-          name: "shareToken",
+          name: "usdToken",
           inputs: [],
           outputs: [
             {
@@ -592,52 +725,6 @@ const deployedContracts = {
             },
           ],
           stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "slippageBps",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "startAutomation",
-          inputs: [
-            {
-              name: "interval",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "stopAutomation",
-          inputs: [],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "transferOwnership",
-          inputs: [
-            {
-              name: "newOwner",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
         },
         {
           type: "function",
@@ -666,43 +753,44 @@ const deployedContracts = {
           stateMutability: "view",
         },
         {
-          type: "function",
-          name: "whbarWeightBps",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint16",
-              internalType: "uint16",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "withdrawFuel",
+          type: "event",
+          name: "Associated",
           inputs: [
             {
-              name: "to",
+              name: "token",
               type: "address",
-              internalType: "address payable",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "Cancelled",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "Claimed",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
             },
             {
               name: "amount",
               type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "event",
-          name: "AutomationStarted",
-          inputs: [
-            {
-              name: "interval",
-              type: "uint256",
               indexed: false,
               internalType: "uint256",
             },
@@ -711,245 +799,37 @@ const deployedContracts = {
         },
         {
           type: "event",
-          name: "AutomationStopped",
+          name: "EIP712DomainChanged",
           inputs: [],
           anonymous: false,
         },
         {
           type: "event",
-          name: "BookingFailed",
+          name: "FallbackSkipped",
           inputs: [
             {
-              name: "responseCode",
-              type: "int64",
-              indexed: false,
-              internalType: "int64",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "Deposited",
-          inputs: [
-            {
-              name: "account",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "hbarIn",
+              name: "id",
               type: "uint256",
-              indexed: false,
+              indexed: true,
               internalType: "uint256",
             },
             {
-              name: "valueAdded",
+              name: "status",
+              type: "uint8",
+              indexed: false,
+              internalType: "enum BackstopDesk.Status",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "FellBack",
+          inputs: [
+            {
+              name: "id",
               type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-            {
-              name: "shares",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "Initialized",
-          inputs: [
-            {
-              name: "shareToken",
-              type: "address",
               indexed: true,
-              internalType: "address",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "LegsSkipped",
-          inputs: [
-            {
-              name: "account",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "skipLegsMask",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "OwnershipTransferred",
-          inputs: [
-            {
-              name: "previousOwner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "newOwner",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "Rebalanced",
-          inputs: [
-            {
-              name: "navBefore",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-            {
-              name: "navAfter",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-            {
-              name: "traded",
-              type: "bool",
-              indexed: false,
-              internalType: "bool",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "Redeemed",
-          inputs: [
-            {
-              name: "account",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "shares",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-            {
-              name: "whbarOut",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-            {
-              name: "legAmounts",
-              type: "uint256[]",
-              indexed: false,
-              internalType: "uint256[]",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "RunBooked",
-          inputs: [
-            {
-              name: "schedule",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "expiry",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "ScheduleDeleted",
-          inputs: [
-            {
-              name: "schedule",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "responseCode",
-              type: "int64",
-              indexed: false,
-              internalType: "int64",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "ScheduledRun",
-          inputs: [
-            {
-              name: "traded",
-              type: "bool",
-              indexed: false,
-              internalType: "bool",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "ScheduledRunFailed",
-          inputs: [
-            {
-              name: "reason",
-              type: "bytes",
-              indexed: false,
-              internalType: "bytes",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "Swapped",
-          inputs: [
-            {
-              name: "tokenIn",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "tokenOut",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "amountIn",
-              type: "uint256",
-              indexed: false,
               internalType: "uint256",
             },
             {
@@ -962,30 +842,214 @@ const deployedContracts = {
           anonymous: false,
         },
         {
-          type: "error",
-          name: "AlreadyInitialized",
-          inputs: [],
+          type: "event",
+          name: "Filled",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "maker",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "amountOut",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
         },
         {
-          type: "error",
-          name: "AutomationActive",
-          inputs: [],
+          type: "event",
+          name: "FuelRefundFailed",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "taker",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "amount",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "NonceInvalidated",
+          inputs: [
+            {
+              name: "maker",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "nonce",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "OrderPosted",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "taker",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "tokenIn",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "tokenOut",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "fee",
+              type: "uint24",
+              indexed: false,
+              internalType: "uint24",
+            },
+            {
+              name: "amountIn",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "minOut",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "expiry",
+              type: "uint64",
+              indexed: false,
+              internalType: "uint64",
+            },
+            {
+              name: "schedule",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "fallbackAt",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "Rearmed",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "schedule",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "fallbackAt",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "Refunded",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "reason",
+              type: "bytes",
+              indexed: false,
+              internalType: "bytes",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "ScheduleDeleted",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "schedule",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "responseCode",
+              type: "int64",
+              indexed: false,
+              internalType: "int64",
+            },
+          ],
+          anonymous: false,
         },
         {
           type: "error",
           name: "BadConfig",
           inputs: [],
-        },
-        {
-          type: "error",
-          name: "BadInterval",
-          inputs: [
-            {
-              name: "interval",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
         },
         {
           type: "error",
@@ -1000,10 +1064,26 @@ const deployedContracts = {
         },
         {
           type: "error",
-          name: "BadSkipMask",
+          name: "BadSignature",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "BadTtl",
           inputs: [
             {
-              name: "skipLegsMask",
+              name: "ttl",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "CannotRearm",
+          inputs: [
+            {
+              name: "id",
               type: "uint256",
               internalType: "uint256",
             },
@@ -1022,15 +1102,15 @@ const deployedContracts = {
         },
         {
           type: "error",
-          name: "InsufficientShares",
+          name: "InsufficientValue",
           inputs: [
             {
-              name: "shares",
+              name: "sent",
               type: "uint256",
               internalType: "uint256",
             },
             {
-              name: "minShares",
+              name: "required",
               type: "uint256",
               internalType: "uint256",
             },
@@ -1038,18 +1118,72 @@ const deployedContracts = {
         },
         {
           type: "error",
-          name: "NotAutomated",
+          name: "InvalidShortString",
           inputs: [],
         },
         {
           type: "error",
-          name: "NotInitialized",
-          inputs: [],
+          name: "NoPool",
+          inputs: [
+            {
+              name: "tokenIn",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "tokenOut",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "fee",
+              type: "uint24",
+              internalType: "uint24",
+            },
+          ],
         },
         {
           type: "error",
-          name: "OnlyOwnerOrSelf",
-          inputs: [],
+          name: "NonceAlreadyUsed",
+          inputs: [
+            {
+              name: "maker",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "nonce",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "NotOpen",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "status",
+              type: "uint8",
+              internalType: "enum BackstopDesk.Status",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "NothingToClaim",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
         },
         {
           type: "error",
@@ -1058,37 +1192,58 @@ const deployedContracts = {
         },
         {
           type: "error",
-          name: "OwnableInvalidOwner",
+          name: "OnlyTaker",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "OrderExpired",
           inputs: [
             {
-              name: "owner",
-              type: "address",
-              internalType: "address",
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
             },
           ],
         },
         {
           type: "error",
-          name: "OwnableUnauthorizedAccount",
+          name: "QuoteBelowMin",
           inputs: [
             {
-              name: "account",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "PoolPriceDeviates",
-          inputs: [
-            {
-              name: "poolHbarUsd",
+              name: "amountOut",
               type: "uint256",
               internalType: "uint256",
             },
             {
-              name: "oracleHbarUsd",
+              name: "minOut",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "QuoteExpired",
+          inputs: [
+            {
+              name: "deadline",
+              type: "uint64",
+              internalType: "uint64",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "QuoteOutsideBand",
+          inputs: [
+            {
+              name: "amountOut",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "floor",
               type: "uint256",
               internalType: "uint256",
             },
@@ -1101,41 +1256,8 @@ const deployedContracts = {
         },
         {
           type: "error",
-          name: "RunAlreadyPending",
-          inputs: [
-            {
-              name: "schedule",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "SafeCastOverflowedIntDowncast",
-          inputs: [
-            {
-              name: "bits",
-              type: "uint8",
-              internalType: "uint8",
-            },
-            {
-              name: "value",
-              type: "int256",
-              internalType: "int256",
-            },
-          ],
-        },
-        {
-          type: "error",
-          name: "SafeCastOverflowedUintToInt",
-          inputs: [
-            {
-              name: "value",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
+          name: "SameToken",
+          inputs: [],
         },
         {
           type: "error",
@@ -1161,6 +1283,17 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "StringTooLong",
+          inputs: [
+            {
+              name: "str",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+        },
+        {
+          type: "error",
           name: "TransferFailed",
           inputs: [
             {
@@ -1172,12 +1305,23 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "UnknownOrder",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
           name: "ZeroAmount",
           inputs: [],
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 41298976,
+      deployedOnBlock: 41355677,
     },
   },
 } as const;

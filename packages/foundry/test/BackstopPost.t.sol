@@ -59,6 +59,14 @@ contract BackstopPostTest is BackstopBase {
         _deployDesk(c);
     }
 
+    function test_constructor_rejectsAbsurdStablecoinDecimals() public {
+        BackstopDesk.Config memory c = _config();
+        c.usdDecimals = 19;
+        vm.expectRevert(BackstopDesk.BadConfig.selector);
+        _deployDesk(c);
+        assertEq(desk.usdDecimals(), 6);
+    }
+
     function test_constructor_rejectsAFeedThatIsNotEightDecimals() public {
         feed.setDecimals(18);
         vm.expectRevert(BackstopDesk.BadConfig.selector);

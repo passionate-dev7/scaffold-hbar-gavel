@@ -4,9 +4,10 @@ import React, { useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bars3Icon, BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { Mark } from "~~/components/basket/Mark";
+import { Mark } from "~~/components/desk/Mark";
 import { RainbowKitCustomConnectButton } from "~~/components/scaffold-hbar";
 import { useOutsideClick } from "~~/hooks/scaffold-hbar";
+import { PRODUCT_NAME } from "~~/utils/desk/constants";
 
 type HeaderMenuLink = {
   label: string;
@@ -86,11 +87,11 @@ export const Header = () => {
         <Link
           href="/"
           passHref
-          aria-label="Index Basket home"
+          aria-label={`${PRODUCT_NAME} home`}
           className="flex items-center gap-3 mx-1 lg:ml-4 lg:mr-6 shrink-0"
         >
           <Mark className="h-8 w-8" />
-          <span className="hidden font-semibold leading-tight text-base tracking-tight sm:inline">Index Basket</span>
+          <span className="hidden font-semibold leading-tight text-base tracking-tight sm:inline">{PRODUCT_NAME}</span>
         </Link>
         <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">
           <HeaderMenuLinks />

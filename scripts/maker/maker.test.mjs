@@ -133,7 +133,9 @@ test("config: defaults, required fields, and no key in errors", () => {
   assert.equal(c.spreadBps, 30);
   assert.equal(c.chainId, 296);
   assert.equal(c.rpcUrl, "https://testnet.hashio.io/api");
-  assert.equal(c.once && c.dryRun && !c.autoFill, true);
+  assert.equal(c.once && c.dryRun && !c.autoFillIgnored, true);
+  assert.equal(loadConfig(env, ["--auto-fill"]).autoFillIgnored, true);
+  assert.equal("autoFill" in c, false);
   assert.throws(() => loadConfig({ ...env, DESK_ADDRESS: undefined }, []), /DESK_ADDRESS/);
   assert.throws(() => loadConfig({ ...env, QUOTE_TOPIC_ID: undefined }, []), /QUOTE_TOPIC_ID/);
   assert.doesNotThrow(() => loadConfig({ ...env, QUOTE_TOPIC_ID: undefined }, ["--dry-run"]));

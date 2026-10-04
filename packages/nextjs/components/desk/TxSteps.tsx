@@ -1,6 +1,6 @@
 import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import type { StepRun } from "~~/hooks/basket/useTx";
-import { hashscan } from "~~/utils/basket/hedera";
+import type { StepRun } from "~~/hooks/desk/useTx";
+import { hashscan } from "~~/utils/desk/hedera";
 
 export type PlannedStep = { id: string; label: string; hint?: string; needed: boolean };
 

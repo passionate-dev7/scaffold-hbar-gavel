@@ -14,6 +14,7 @@ const HASHSCAN = "https://hashscan.io/testnet";
 
 export const hashscan = {
   tx: (hash: string) => `${HASHSCAN}/transaction/${hash}`,
+  topic: (id: string) => `${HASHSCAN}/topic/${id}`,
   contract: (address: string) => `${HASHSCAN}/contract/${address}`,
   account: (address: string) => `${HASHSCAN}/account/${address}`,
   token: (address: string) => `${HASHSCAN}/token/${evmToEntityId(address)}`,

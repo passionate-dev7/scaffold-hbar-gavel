@@ -1,17 +1,10 @@
 import { useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Abi, Address, ContractFunctionArgs, ContractFunctionName, Hex } from "viem";
-import { useAccount, usePublicClient, useSendTransaction, useSwitchChain, useWriteContract } from "wagmi";
-import {
-  CHAIN_ID,
-  GAS_CAP,
-  GAS_FLOOR,
-  HRC719_ABI,
-  HTS_ALREADY_ASSOCIATED,
-  HTS_SUCCESS,
-} from "~~/utils/basket/constants";
-import { explainError, revertName } from "~~/utils/basket/errors";
-import { waitForContractResult } from "~~/utils/basket/mirror";
+import { useAccount, usePublicClient, useSwitchChain, useWriteContract } from "wagmi";
+import { CHAIN_ID, GAS_CAP, GAS_FLOOR, HRC719_ABI, HTS_ALREADY_ASSOCIATED, HTS_SUCCESS } from "~~/utils/desk/constants";
+import { explainError, revertName } from "~~/utils/desk/errors";
+import { waitForContractResult } from "~~/utils/desk/mirror";
 
 export type StepRun = { status: "signing" | "confirming" | "done" | "failed"; hash?: Hex; error?: string };
 
@@ -22,7 +15,7 @@ export type RunnableStep = {
   verify?: (hash: Hex) => Promise<void>;
 };
 
-/** Wallet readiness for writes: connected, and on the chain the vault lives on. */
+/** Wallet readiness for writes: connected, and on the chain the desk lives on. */
 export function useWalletReady() {
   const { address, chain } = useAccount();
   const { switchChain, isPending: switching } = useSwitchChain();
@@ -38,7 +31,7 @@ export function useWalletReady() {
 }
 
 /**
- * Sends contract calls and plain value transfers with gas set explicitly, and runs a list of them in order while
+ * Sends contract calls with gas set explicitly, and runs a list of them in order while
  * tracking each one: waiting for the wallet, waiting for consensus, done, or failed with a readable reason.
  */
 export function useTx() {
@@ -46,7 +39,6 @@ export function useTx() {
   const client = usePublicClient({ chainId: CHAIN_ID });
   const queryClient = useQueryClient();
   const { writeContractAsync } = useWriteContract();
-  const { sendTransactionAsync } = useSendTransaction();
   const [runs, setRuns] = useState<Record<string, StepRun>>({});
   const [running, setRunning] = useState(false);
 
@@ -75,9 +67,6 @@ export function useTx() {
     return writeContractAsync({ ...params, chainId: CHAIN_ID, gas } as never);
   };
 
-  const sendValue = async (to: Address, value: bigint): Promise<Hex> =>
-    sendTransactionAsync({ to, value, chainId: CHAIN_ID, gas: GAS_FLOOR.topUp });
-
   const run = useCallback(
     async (steps: RunnableStep[]): Promise<boolean> => {
       setRunning(true);
@@ -98,7 +87,7 @@ export function useTx() {
             patch(step.id, { status: "done", hash });
             // Association answers stay as the HTS response code set them: the mirror node trails consensus.
             await queryClient.invalidateQueries({
-              predicate: q => !(q.queryKey[0] === "basket" && q.queryKey[1] === "assoc"),
+              predicate: q => !(q.queryKey[0] === "desk" && q.queryKey[1] === "assoc"),
             });
           } catch (error) {
             patch(step.id, { status: "failed", hash, error: explainError(error) });
@@ -123,9 +112,9 @@ export function useTx() {
       if (result !== "SUCCESS" || (code !== HTS_SUCCESS && code !== HTS_ALREADY_ASSOCIATED)) {
         throw new Error(`Hedera Token Service answered ${code?.toString() ?? result}. The association did not happen.`);
       }
-      queryClient.setQueryData(["basket", "assoc", address, token], "associated");
+      queryClient.setQueryData(["desk", "assoc", address, token], "associated");
     },
   });
 
-  return { runs, running, run, call, sendValue, associateStep, reset: () => setRuns({}) };
+  return { runs, running, run, call, associateStep, reset: () => setRuns({}) };
 }

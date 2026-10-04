@@ -4,15 +4,16 @@ import "@scaffold-hbar-ui/components/styles.css";
 import { ScaffoldHbarAppWithProviders } from "~~/components/ScaffoldHbarAppWithProviders";
 import { ThemeProvider } from "~~/components/ThemeProvider";
 import "~~/styles/globals.css";
+import { PRODUCT_NAME } from "~~/utils/desk/constants";
 import { getMetadata } from "~~/utils/scaffold-hbar/getMetadata";
 
 const plexSans = IBM_Plex_Sans({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-plex-sans" });
 const plexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-plex-mono" });
 
 export const metadata = getMetadata({
-  title: "Index Basket",
+  title: PRODUCT_NAME,
   description:
-    "A tokenised index fund on Hedera. Deposit HBAR, hold one share of a weighted token basket that rebalances itself on a Hedera schedule, redeem in kind.",
+    "An RFQ order desk on Hedera. Post a swap, makers bid with signed quotes over Consensus Service, and a scheduled SaucerSwap fallback guarantees your floor.",
 });
 
 const ScaffoldHbarApp = ({ children }: { children: React.ReactNode }) => {

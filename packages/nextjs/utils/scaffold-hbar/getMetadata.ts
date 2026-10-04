@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { PRODUCT_NAME } from "~~/utils/desk/constants";
 
 const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
   : `http://localhost:${process.env.PORT || 3000}`;
-const titleTemplate = "%s | Index Basket";
+const titleTemplate = `%s | ${PRODUCT_NAME}`;
 
 export const getMetadata = ({
   title,

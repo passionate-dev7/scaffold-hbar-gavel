@@ -1,6 +1,6 @@
 # Backstop maker bot
 
-A market maker for the Backstop desk. It watches `OrderPosted` events, prices each open order from the SaucerSwap V2 pool, signs an EIP-712 `Quote`, and posts the quote to a Hedera Consensus Service topic. Takers read the topic from the mirror node, verify the signature, and settle the best quote with `fillWithQuote`. The bot keeps the desk's allowance on `tokenOut` topped up and can settle its own quotes with `--auto-fill`.
+A market maker for the Backstop desk. It watches `OrderPosted` events, prices each open order from the SaucerSwap V2 pool, signs an EIP-712 `Quote`, and posts the quote to a Hedera Consensus Service topic. Takers read the topic from the mirror node, verify the signature, and settle the best quote with `fillWithQuote`. The bot keeps the desk's allowance on `tokenOut` topped up. Fills are taker-only (`OnlyTaker`): the order's taker accepts a quote, the maker never settles its own.
 
 It is a plain Node script with its own `package.json` (viem and `@hiero-ledger/sdk` only) and sits outside the repo's yarn workspaces.
 
@@ -37,7 +37,7 @@ The maker account needs `tokenOut` for the pairs it quotes (WHBAR, USDC or SAUCE
 node scripts/maker/maker.mjs --once --dry-run   # print the quotes it would post, send nothing
 node scripts/maker/maker.mjs --once             # quote every open order, then exit
 node scripts/maker/maker.mjs                    # loop every POLL_SECONDS
-node scripts/maker/maker.mjs --auto-fill        # also call fillWithQuote for each quote it posts
+node scripts/maker/maker.mjs --auto-fill        # accepted for old scripts, logs a notice and does nothing
 npm test                                        # unit tests (node:test)
 ```
 

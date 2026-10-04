@@ -119,25 +119,6 @@
     line-height: 1.15;
   }
 
-  /* Basket segment colors. One slot per token, in holdings() order: WHBAR first, then the legs. */
-  :root,
-  [data-theme="light"] {
-    --seg-0: #2f3b52;
-    --seg-1: #a85a14;
-    --seg-2: #13806e;
-    --seg-3: #a83a62;
-    --seg-4: #5b68b8;
-    --seg-ink: #ffffff;
-  }
-
-  [data-theme="dark"] {
-    --seg-0: #9fb0d0;
-    --seg-1: #f0a24a;
-    --seg-2: #3cc4ab;
-    --seg-3: #e0709a;
-    --seg-4: #9aa5f0;
-    --seg-ink: #0e1018;
-  }
 }
 
 :root,

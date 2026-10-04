@@ -1,4 +1,4 @@
-import type { AssociationState } from "~~/hooks/basket/useAssociations";
+import type { AssociationState } from "~~/hooks/desk/useAssociations";
 
 /** Shown when the mirror node could not say whether the account is associated. Never read as "associated". */
 export const AssociationWarning = ({ state }: { state: AssociationState | undefined }) => {

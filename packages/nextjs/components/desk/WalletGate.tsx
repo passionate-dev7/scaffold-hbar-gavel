@@ -1,5 +1,5 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useWalletReady } from "~~/hooks/basket/useTx";
+import { useWalletReady } from "~~/hooks/desk/useTx";
 
 /** Shown in place of a panel's action when the wallet cannot send yet: not connected, or on another chain. */
 export function WalletGate({

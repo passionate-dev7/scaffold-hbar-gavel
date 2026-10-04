@@ -11,7 +11,6 @@ import { decideQuote, quoteDeadline, quoteJson, signQuote, recoverQuoteSigner, S
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CHAIN_IDS = { testnet: 296, mainnet: 295, previewnet: 297 };
 const GAS_APPROVE = 1_500_000n;
-const GAS_FILL = 2_000_000n;
 const ORDER_POSTED = toEventSelector(deskAbi.find((x) => x.type === "event" && x.name === "OrderPosted"));
 
 export function loadConfig(env = process.env, argv = process.argv.slice(2)) {
@@ -39,7 +38,8 @@ export function loadConfig(env = process.env, argv = process.argv.slice(2)) {
     rpcUrl: env.RPC_URL || "https://testnet.hashio.io/api",
     once: flags.has("--once"),
     dryRun: flags.has("--dry-run"),
-    autoFill: flags.has("--auto-fill"),
+    // fillWithQuote is taker-only (OnlyTaker), so the maker has nothing to fill with. The flag is accepted and ignored.
+    autoFillIgnored: flags.has("--auto-fill"),
   };
 }
 
@@ -109,7 +109,8 @@ export async function main() {
   if (!cfg.dryRun) {
     hcs = hederaClient({ network: cfg.network, accountId: await resolveAccountId(cfg, account.address), privateKey: cfg.privateKey });
   }
-  log(`maker ${account.address} desk ${desk} chain ${cfg.chainId} spread ${cfg.spreadBps}bps mode ${cfg.dryRun ? "dry-run" : cfg.autoFill ? "post+auto-fill" : "post"}`);
+  log(`maker ${account.address} desk ${desk} chain ${cfg.chainId} spread ${cfg.spreadBps}bps mode ${cfg.dryRun ? "dry-run" : "post"}`);
+  if (cfg.autoFillIgnored) log("--auto-fill is a no-op: fillWithQuote is taker-only (OnlyTaker), so the maker posts quotes and the order's taker accepts one");
 
   const known = new Set();
   const quoted = new Map(); // id -> { deadline, amountOut, tokenOut }
@@ -205,20 +206,6 @@ export async function main() {
     const posted = await postToTopic(hcs, cfg.topicId, message);
     quoted.set(id, { deadline, amountOut: d.amountOut, tokenOut: order.tokenOut });
     log(`order ${id} quoted ${d.amountOut} until ${deadline}: topic ${cfg.topicId} seq ${posted.sequence} tx ${posted.txId}`);
-
-    if (cfg.autoFill) {
-      const hash = await wallet.writeContract({
-        address: desk,
-        abi: deskAbi,
-        functionName: "fillWithQuote",
-        args: [id, { maker: quote.maker, amountOut: quote.amountOut, deadline, nonce: quote.nonce }, signature],
-        gas: GAS_FILL,
-      });
-      await waitReceipt(hash);
-      const after = await pub.readContract({ address: desk, abi: deskAbi, functionName: "getOrder", args: [id] });
-      if (Number(after.status) !== STATUS.Filled) throw new Error(`fillWithQuote mined but order ${id} status is ${after.status}`);
-      log(`order ${id} filled by maker (${hash})`);
-    }
   };
 
   const tick = async () => {

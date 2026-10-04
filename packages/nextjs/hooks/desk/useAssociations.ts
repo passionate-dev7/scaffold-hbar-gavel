@@ -1,6 +1,6 @@
 import { useQueries } from "@tanstack/react-query";
 import type { Address } from "viem";
-import { type Association, MirrorError, fetchAssociation } from "~~/utils/basket/mirror";
+import { type Association, MirrorError, fetchAssociation } from "~~/utils/desk/mirror";
 
 export type AssociationState =
   | { kind: "no-account" }
@@ -12,7 +12,7 @@ export type AssociationState =
 export function useAssociations(account: Address | undefined, tokens: readonly Address[]) {
   const results = useQueries({
     queries: tokens.map(token => ({
-      queryKey: ["basket", "assoc", account, token],
+      queryKey: ["desk", "assoc", account, token],
       enabled: !!account,
       staleTime: 10_000,
       retry: 1,

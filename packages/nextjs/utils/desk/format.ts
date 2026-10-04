@@ -1,3 +1,5 @@
+import { WHBAR, tokenOf } from "./constants";
+
 /**
  * Fixed-point display. Rounds half up on the bigint, never through a float, so a balance of
  * 123456789.12345678 prints the digits the chain holds.
@@ -18,6 +20,10 @@ export function fmtUnits(value: bigint, decimals: number, digits = 4, pad = fals
 
 /** USD amounts from the contract carry 8 decimals. */
 export const fmtUsd = (value8: bigint, digits = 2) => `$${fmtUnits(value8, 8, digits, true)}`;
+
+/** Signed basis points as a percentage: +0.42%, -0.30%. */
+export const fmtSignedBps = (bps: number) =>
+  `${bps > 0 ? "+" : bps < 0 ? "-" : ""}${(Math.abs(bps) / 100).toFixed(2)}%`;
 
 export const fmtPercentFromBps = (bps: number | bigint) => `${(Number(bps) / 100).toFixed(2)}%`;
 
@@ -49,3 +55,16 @@ export function parseAmount(input: string, decimals: number): bigint | null {
   if (frac.length > decimals) return null;
   return BigInt(whole || "0") * 10n ** BigInt(decimals) + BigInt(frac.padEnd(decimals, "0") || "0");
 }
+
+/** A raw token amount with its symbol. Tokens the desk does not list print raw so a wrong scale is never guessed. */
+export function fmtToken(amount: bigint, address: string, digits = 4): string {
+  const token = tokenOf(address);
+  return token ? `${fmtUnits(amount, token.decimals, digits)} ${token.symbol}` : `${amount} (raw units)`;
+}
+
+/** HBAR in tinybar. */
+export const fmtHbar = (tinybar: bigint, digits = 4) => `${fmtUnits(tinybar, 8, digits)} HBAR`;
+
+/** What an order escrowed: WHBAR is HBAR the desk wrapped for the taker, so it reads as HBAR. */
+export const fmtEscrow = (amount: bigint, tokenIn: string) =>
+  tokenIn.toLowerCase() === WHBAR.address.toLowerCase() ? fmtHbar(amount) : fmtToken(amount, tokenIn);

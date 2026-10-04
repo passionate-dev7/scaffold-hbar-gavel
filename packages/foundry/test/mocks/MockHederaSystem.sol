@@ -154,6 +154,7 @@ contract MockHss {
     int64 public forcedDeleteCode;
     mapping(uint256 second => bool) public busy;
     address public lastDeleted;
+    mapping(address schedule => bool) public deleted;
     uint256 public deleteCount;
     ScheduledCall[] private _calls;
 
@@ -183,6 +184,7 @@ contract MockHss {
 
     function deleteSchedule(address scheduleAddress) external returns (int64) {
         lastDeleted = scheduleAddress;
+        if (forcedDeleteCode == 0) deleted[scheduleAddress] = true;
         ++deleteCount;
         return forcedDeleteCode == 0 ? SUCCESS : forcedDeleteCode;
     }

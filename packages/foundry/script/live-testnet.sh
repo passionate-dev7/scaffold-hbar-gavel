@@ -154,7 +154,9 @@ echo "== Order A: maker quote over HCS, settled on chain"
 TAKER_USDC_A=$(num "$USDC" "balanceOf(address)(uint256)" "$ME")
 post_order "A post order" 600
 A_ID=$ORDER_ID
-A_QUOTE_OUT=$((SPOT * 995 / 1000))
+# A maker quotes above pool spot: the fallback pays spot less the 0.30% pool fee, so 20 bps over spot is a 50 bps
+# improvement over the guaranteed exit.
+A_QUOTE_OUT=$((SPOT * 1002 / 1000))
 A_DEADLINE=$(($(date +%s) + 600))
 A_NONCE=$(date +%s)
 QUOTE_JSON=$(node scripts-js/sign-quote.mjs "$DESK" "$A_ID" "$A_QUOTE_OUT" "$A_DEADLINE" "$A_NONCE")
@@ -194,6 +196,7 @@ B_STATUS=$(status_of "$B_ID")
 GOT_B=$(($(num "$USDC" "balanceOf(address)(uint256)" "$ME") - TAKER_USDC_B))
 echo "  order B status ${NAMES[$B_STATUS]}, taker received $GOT_B raw USDC (minOut $MIN_OUT)"
 [ "$B_STATUS" = 2 ] && [ "$GOT_B" -ge "$MIN_OUT" ] || { echo "FAILED: order B did not fall back and pay the taker"; exit 1; }
+echo "  the quote paid $(( (GOT_A - GOT_B) * 10000 / GOT_B )) bps more than the fallback on the same size order"
 # Mirror: the desk's transaction that did it is a scheduled one, and the FellBack event is in its logs.
 FELLBACK_TOPIC=$(cast keccak "FellBack(uint256,uint256)")
 for _ in $(seq 1 20); do

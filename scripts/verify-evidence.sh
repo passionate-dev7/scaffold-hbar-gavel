@@ -9,17 +9,17 @@ RPC=${HEDERA_RPC_URL:-https://testnet.hashio.io/api}
 M=https://testnet.mirrornode.hedera.com/api/v1
 SOURCIFY=https://sourcify.dev/server/v2/contract/296
 
-DESK=${DESK:-0x94b7767B707a0117e94d0E96DAcfb2129FbF71Dd}
-DESK_ID=${DESK_ID:-0.0.10860168}
+DESK=${DESK:-0xe48eC020C7D928330c788f1AC448F72C7d116960}
+DESK_ID=${DESK_ID:-0.0.10860415}
 TOPIC=${TOPIC:-0.0.10860170}
 MAKER=${MAKER:-0x9Cad678f7D970afe0B9736Bae036877255a9dA84}
 WHBAR=0x0000000000000000000000000000000000003aD2
-ORDER_A=${ORDER_A:-4} # filled with a quote read from the topic
-ORDER_B=${ORDER_B:-5} # no quote: the desk's scheduled call swapped it
-ORDER_C=${ORDER_C:-6} # cancelled
+ORDER_A=${ORDER_A:-3} # filled with a quote read from the topic
+ORDER_B=${ORDER_B:-4} # no quote: the desk's scheduled call swapped it
+ORDER_C=${ORDER_C:-5} # cancelled
 EXPECT_SCHEDULED_GAS=${EXPECT_SCHEDULED_GAS:-3000000}
 EXPECT_FUEL=${EXPECT_FUEL:-400000000}
-EXPECT_CODE_BYTES=${EXPECT_CODE_BYTES:-13901}
+EXPECT_CODE_BYTES=${EXPECT_CODE_BYTES:-15794}
 
 fails=0
 row() { # row <name> <ok 0|1> <detail>

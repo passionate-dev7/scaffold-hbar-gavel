@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-hbar/contract";
 const deployedContracts = {
   296: {
     BackstopDesk: {
-      address: "0x94b7767b707a0117e94d0e96dacfb2129fbf71dd",
+      address: "0xe48ec020c7d928330c788f1ac448f72c7d116960",
       abi: [
         {
           type: "constructor",
@@ -184,6 +184,24 @@ const deployedContracts = {
           inputs: [
             {
               name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "cancelNonces",
+          inputs: [
+            {
+              name: "wordPos",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "mask",
               type: "uint256",
               internalType: "uint256",
             },
@@ -459,19 +477,6 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "invalidateNonce",
-          inputs: [
-            {
-              name: "nonce",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          outputs: [],
-          stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
           name: "maxDeviationBps",
           inputs: [],
           outputs: [
@@ -487,6 +492,30 @@ const deployedContracts = {
           type: "function",
           name: "maxOracleAge",
           inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "nonceBitmap",
+          inputs: [
+            {
+              name: "maker",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "wordPos",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
           outputs: [
             {
               name: "",
@@ -893,7 +922,7 @@ const deployedContracts = {
         },
         {
           type: "event",
-          name: "NonceInvalidated",
+          name: "NoncesCancelled",
           inputs: [
             {
               name: "maker",
@@ -902,7 +931,13 @@ const deployedContracts = {
               internalType: "address",
             },
             {
-              name: "nonce",
+              name: "wordPos",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "mask",
               type: "uint256",
               indexed: false,
               internalType: "uint256",
@@ -1091,12 +1126,34 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "CustomFees",
+          inputs: [
+            {
+              name: "token",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
           name: "HtsCallFailed",
           inputs: [
             {
               name: "responseCode",
               type: "int64",
               internalType: "int64",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "Insolvent",
+          inputs: [
+            {
+              name: "token",
+              type: "address",
+              internalType: "address",
             },
           ],
         },
@@ -1305,6 +1362,22 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "UnexpectedReceived",
+          inputs: [
+            {
+              name: "expected",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "received",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
           name: "UnknownOrder",
           inputs: [
             {
@@ -1321,7 +1394,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 41355677,
+      deployedOnBlock: 41356368,
     },
   },
 } as const;

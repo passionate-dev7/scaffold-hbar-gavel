@@ -6,8 +6,1398 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-hbar/contract";
 
 const deployedContracts = {
   296: {
-    GavelDesk: {
+    BackstopDesk: {
       address: "0xe48ec020c7d928330c788f1ac448f72c7d116960",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "c",
+              type: "tuple",
+              internalType: "struct BackstopDesk.Config",
+              components: [
+                {
+                  name: "router",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "factory",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "whbarHelper",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "whbar",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "hbarUsdFeed",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "usdToken",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "usdDecimals",
+                  type: "uint8",
+                  internalType: "uint8",
+                },
+                {
+                  name: "maxOracleAge",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "maxDeviationBps",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "fuelPerOrder",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "scheduledGas",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+              ],
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "receive",
+          stateMutability: "payable",
+        },
+        {
+          type: "function",
+          name: "MAX_REARMS",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint8",
+              internalType: "uint8",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "MAX_TTL",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "MIN_SCHEDULED_GAS",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "MIN_TTL",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "RETRY_GRACE",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "associateTokens",
+          inputs: [
+            {
+              name: "tokens",
+              type: "address[]",
+              internalType: "address[]",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "associated",
+          inputs: [
+            {
+              name: "token",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "cancel",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "cancelNonces",
+          inputs: [
+            {
+              name: "wordPos",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "mask",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "claim",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "eip712Domain",
+          inputs: [],
+          outputs: [
+            {
+              name: "fields",
+              type: "bytes1",
+              internalType: "bytes1",
+            },
+            {
+              name: "name",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "version",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "chainId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "verifyingContract",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "salt",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "extensions",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "escrowed",
+          inputs: [
+            {
+              name: "token",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "factory",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract ISaucerSwapV2Factory",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "fallbackFill",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "fillWithQuote",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "quote",
+              type: "tuple",
+              internalType: "struct BackstopDesk.Quote",
+              components: [
+                {
+                  name: "maker",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "amountOut",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "deadline",
+                  type: "uint64",
+                  internalType: "uint64",
+                },
+                {
+                  name: "nonce",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+              ],
+            },
+            {
+              name: "signature",
+              type: "bytes",
+              internalType: "bytes",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "fuelPerOrder",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getOrder",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "tuple",
+              internalType: "struct BackstopDesk.Order",
+              components: [
+                {
+                  name: "taker",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "tokenIn",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "tokenOut",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "fee",
+                  type: "uint24",
+                  internalType: "uint24",
+                },
+                {
+                  name: "amountIn",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "minOut",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "expiry",
+                  type: "uint64",
+                  internalType: "uint64",
+                },
+                {
+                  name: "schedule",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "status",
+                  type: "uint8",
+                  internalType: "enum BackstopDesk.Status",
+                },
+                {
+                  name: "rearms",
+                  type: "uint8",
+                  internalType: "uint8",
+                },
+                {
+                  name: "fuel",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "claimable",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+              ],
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "hbarUsd",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "hbarUsdFeed",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract AggregatorV3Interface",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "maxDeviationBps",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "maxOracleAge",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "nonceBitmap",
+          inputs: [
+            {
+              name: "maker",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "wordPos",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "nonceUsed",
+          inputs: [
+            {
+              name: "maker",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "nonce",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "oracleFloor",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "orderCount",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "postOrder",
+          inputs: [
+            {
+              name: "tokenIn",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "tokenOut",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "fee",
+              type: "uint24",
+              internalType: "uint24",
+            },
+            {
+              name: "amountIn",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "minOut",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "ttl",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "payable",
+        },
+        {
+          type: "function",
+          name: "quoteDigest",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "quote",
+              type: "tuple",
+              internalType: "struct BackstopDesk.Quote",
+              components: [
+                {
+                  name: "maker",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "amountOut",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "deadline",
+                  type: "uint64",
+                  internalType: "uint64",
+                },
+                {
+                  name: "nonce",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+              ],
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "rearm",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "router",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract ISaucerSwapV2Router",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "scheduledGas",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "swapEscrow",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "amountOut",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "usdDecimals",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint8",
+              internalType: "uint8",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "usdToken",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "whbar",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "whbarHelper",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "contract IWhbarHelper",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "event",
+          name: "Associated",
+          inputs: [
+            {
+              name: "token",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "Cancelled",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "Claimed",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "amount",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "EIP712DomainChanged",
+          inputs: [],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "FallbackSkipped",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "status",
+              type: "uint8",
+              indexed: false,
+              internalType: "enum BackstopDesk.Status",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "FellBack",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "amountOut",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "Filled",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "maker",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "amountOut",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "FuelRefundFailed",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "taker",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "amount",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "NoncesCancelled",
+          inputs: [
+            {
+              name: "maker",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "wordPos",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "mask",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "OrderPosted",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "taker",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "tokenIn",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "tokenOut",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "fee",
+              type: "uint24",
+              indexed: false,
+              internalType: "uint24",
+            },
+            {
+              name: "amountIn",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "minOut",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "expiry",
+              type: "uint64",
+              indexed: false,
+              internalType: "uint64",
+            },
+            {
+              name: "schedule",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "fallbackAt",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "Rearmed",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "schedule",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "fallbackAt",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "Refunded",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "reason",
+              type: "bytes",
+              indexed: false,
+              internalType: "bytes",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "ScheduleDeleted",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "schedule",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "responseCode",
+              type: "int64",
+              indexed: false,
+              internalType: "int64",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "BadConfig",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "BadOraclePrice",
+          inputs: [
+            {
+              name: "answer",
+              type: "int256",
+              internalType: "int256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "BadSignature",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "BadTtl",
+          inputs: [
+            {
+              name: "ttl",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "CannotRearm",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "CustomFees",
+          inputs: [
+            {
+              name: "token",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "HtsCallFailed",
+          inputs: [
+            {
+              name: "responseCode",
+              type: "int64",
+              internalType: "int64",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "Insolvent",
+          inputs: [
+            {
+              name: "token",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "InsufficientValue",
+          inputs: [
+            {
+              name: "sent",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "required",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "InvalidShortString",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "NoPool",
+          inputs: [
+            {
+              name: "tokenIn",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "tokenOut",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "fee",
+              type: "uint24",
+              internalType: "uint24",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "NonceAlreadyUsed",
+          inputs: [
+            {
+              name: "maker",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "nonce",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "NotOpen",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "status",
+              type: "uint8",
+              internalType: "enum BackstopDesk.Status",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "NothingToClaim",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OnlySelf",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "OnlyTaker",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "OrderExpired",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "QuoteBelowMin",
+          inputs: [
+            {
+              name: "amountOut",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "minOut",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "QuoteExpired",
+          inputs: [
+            {
+              name: "deadline",
+              type: "uint64",
+              internalType: "uint64",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "QuoteOutsideBand",
+          inputs: [
+            {
+              name: "amountOut",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "floor",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "ReentrancyGuardReentrantCall",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "SameToken",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "ScheduleFailed",
+          inputs: [
+            {
+              name: "responseCode",
+              type: "int64",
+              internalType: "int64",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "StaleOracle",
+          inputs: [
+            {
+              name: "updatedAt",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "StringTooLong",
+          inputs: [
+            {
+              name: "str",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "TransferFailed",
+          inputs: [
+            {
+              name: "token",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "UnexpectedReceived",
+          inputs: [
+            {
+              name: "expected",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "received",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "UnknownOrder",
+          inputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "ZeroAmount",
+          inputs: [],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 41356368,
+    },
+    GavelDesk: {
+      address: "0x659380d965ee890fd93bf36c537dad80ee76f73c",
       abi: [
         {
           type: "constructor",
@@ -1394,7 +2784,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 41356368,
+      deployedOnBlock: 41358636,
     },
   },
 } as const;

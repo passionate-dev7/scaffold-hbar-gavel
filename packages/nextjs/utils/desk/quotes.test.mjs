@@ -7,19 +7,19 @@ const DOMAIN = {
   name: "Gavel",
   version: "1",
   chainId: 296,
-  verifyingContract: "0xe48eC020C7D928330c788f1AC448F72C7d116960",
+  verifyingContract: "0x659380d965EE890fD93bf36C537dAd80ee76F73C",
 };
 
-// Message 4 of HCS topic 0.0.10860170 exactly as the mirror node served it.
-const LIVE = {"sequence":4,"consensusTimestamp":"1791138408.814294178","message":"eyJvcmRlcklkIjoiMyIsIm1ha2VyIjoiMHg5Q2FkNjc4ZjdEOTcwYWZlMEI5NzM2QmFlMDM2ODc3MjU1YTlkQTg0IiwiYW1vdW50T3V0IjoiNTMzODc1OCIsImRlYWRsaW5lIjoiMTc5MTEzOTAwNyIsIm5vbmNlIjoiMTc5MTEzODQwNyIsInNpZ25hdHVyZSI6IjB4ZGM2OGY1N2Y0Nzk3NTVlOWVjYWU4Njk5MTFkNjQ1ZDFjMmRlMDg0YWYwYzNkODdjM2E2OTI0M2RlZmRmNmNjYzQwZTkxNDhhOWI2MjI3MDZjYWExNzQ3ZmM3YWJjYjA4YWQ0NTg1YjZhYTE0NWIxY2UxNjJjYzI5MTdmYTYyODgxYiJ9"};
+// Message 4 of HCS topic 0.0.10861214 exactly as the mirror node served it.
+const LIVE = {"sequence":1,"consensusTimestamp":"1791141700.859219104","message":"eyJvcmRlcklkIjoiMSIsIm1ha2VyIjoiMHg5Q2FkNjc4ZjdEOTcwYWZlMEI5NzM2QmFlMDM2ODc3MjU1YTlkQTg0IiwiYW1vdW50T3V0IjoiNTUyNTUyNSIsImRlYWRsaW5lIjoiMTc5MTE0MjI5OCIsIm5vbmNlIjoiMTc5MTE0MTY5OCIsInNpZ25hdHVyZSI6IjB4ZTY1YmZjZjQxOTZmNzhhYTI1MGNmNWUyODc4ZDg3ZDMwZjRlYmQ4YTJlNzA2NTU3OTk1YmQyODVmNDE2YTM0ZTA4ZmQxNTcyNGVjNTM1MGZmM2M0YWEyMjg0YzllZTk0OTNiZGNlNTc0NTQzOTA1NWRhOGViNTNjNGVlMGRhOTgxYyJ9"};
 
 const b64 = obj => Buffer.from(JSON.stringify(obj)).toString("base64");
-const asMessage = (obj, sequence = 1) => ({ sequence, consensusTimestamp: "1791138408.814294178", message: b64(obj) });
+const asMessage = (obj, sequence = 1) => ({ sequence, consensusTimestamp: "1791141700.859219104", message: b64(obj) });
 
 test("a live topic message parses and its signature recovers to the maker under the desk domain", async () => {
   const q = parseQuote(LIVE);
   assert.ok(q);
-  assert.equal(q.orderId, 3n);
+  assert.equal(q.orderId, 1n);
   assert.equal(await verifyQuote(q, DOMAIN), true);
 });
 

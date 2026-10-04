@@ -13,7 +13,7 @@ export const DESK_ABI = deployed.abi;
 export const DESK_ADDRESS = deployed.address as Address;
 
 /** HCS topic the makers publish signed quotes to. */
-export const QUOTE_TOPIC_ID = process.env.NEXT_PUBLIC_QUOTE_TOPIC_ID || "0.0.10860170";
+export const QUOTE_TOPIC_ID = process.env.NEXT_PUBLIC_QUOTE_TOPIC_ID || "0.0.10861214";
 
 export const ERC20_ABI = parseAbi([
   "function balanceOf(address) view returns (uint256)",

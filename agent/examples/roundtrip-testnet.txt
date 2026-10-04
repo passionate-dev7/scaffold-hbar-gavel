@@ -1,0 +1,150 @@
+desk 0x659380d965ee890fd93bf36c537dad80ee76f73c (GavelDesk)  topic 0.0.10861214  rpc https://testnet.hashio.io/api
+taker 0.0.6511437  maker 0.0.10859933  write flags roundtrip
+EIP-712 domain read from the desk: {"name":"Gavel","version":"1","chainId":296,"verifyingContract":"0x659380d965EE890fD93bf36C537dAd80ee76F73C"}
+
+== [taker] post_order
+Posted order 5: sell 1 WHBAR for at least 1.653231 USDC, open until 2026-10-04T19:37:33.000Z. https://hashscan.io/testnet/transaction/0.0.6511437-1791142050-435647056
+{
+  "transactionId": "0.0.6511437@1791142050.435647056",
+  "hash": "0x85dde888e082b6b907917cab745e2066d2031f840074e7306073b2a4e28384c0",
+  "account": "0.0.6511437",
+  "orderId": "5",
+  "orderStatus": "Open",
+  "sells": "1 WHBAR",
+  "minOut": "1.653231",
+  "minOutRaw": "1653231",
+  "spotOut": "1.836924",
+  "expiresAt": "2026-10-04T19:37:33.000Z",
+  "fallbackAt": "2026-10-04T19:37:33.000Z",
+  "warnings": [],
+  "gasUsed": 1722149,
+  "quoteTopic": {
+    "id": "0.0.10861214",
+    "link": "https://hashscan.io/testnet/topic/0.0.10861214"
+  },
+  "links": {
+    "tx": "https://hashscan.io/testnet/transaction/0.0.6511437-1791142050-435647056",
+    "desk": "https://hashscan.io/testnet/contract/0x659380d965ee890fd93bf36c537dad80ee76f73c",
+    "fallbackSchedule": "https://hashscan.io/testnet/schedule/0.0.10861276"
+  },
+  "status": "SUCCESS"
+}
+
+== [maker] quote_order
+Quoted order 5: 1.831413 USDC until 2026-10-04T19:32:39.000Z, topic 0.0.10861214 message 3. https://hashscan.io/testnet/transaction/0.0.10859933-1791142053-821737331
+{
+  "transactionId": "0.0.10859933@1791142053.821737331",
+  "account": "0.0.10859933",
+  "maker": "0x9Cad678f7D970afe0B9736Bae036877255a9dA84",
+  "orderId": "5",
+  "amountOut": "1.831413",
+  "amountOutRaw": "1831413",
+  "poolSpotOut": "1.836924",
+  "spreadBps": 30,
+  "vsFallbackBps": 0,
+  "vsMinOutBps": 1077.78,
+  "deadline": "2026-10-04T19:32:39.000Z",
+  "nonce": "5",
+  "topicMessage": {
+    "topic": "0.0.10861214",
+    "sequence": 3,
+    "consensusTimestamp": "1791142062.367945796",
+    "link": "https://testnet.mirrornode.hedera.com/api/v1/topics/0.0.10861214/messages/3"
+  },
+  "links": {
+    "tx": "https://hashscan.io/testnet/transaction/0.0.10859933-1791142053-821737331",
+    "topic": "https://hashscan.io/testnet/topic/0.0.10861214",
+    "desk": "https://hashscan.io/testnet/contract/0x659380d965ee890fd93bf36c537dad80ee76f73c"
+  },
+  "status": "SUCCESS"
+}
+
+== [taker] list_quotes
+Order 5: 1 verified quote(s). Best 1.831413 USDC from 0x9Cad678f7D970afe0B9736Bae036877255a9dA84, 0 bps over the fallback estimate, 291s left.
+{
+  "orderId": "5",
+  "sells": "1 WHBAR",
+  "minBuys": "1.653231 USDC",
+  "fallbackEstimate": "1.831413 USDC",
+  "oracleFloor": "100583",
+  "messagesRead": 3,
+  "verifiedQuotes": 1,
+  "rejected": {
+    "total": 0,
+    "byReason": {}
+  },
+  "quotes": [
+    {
+      "rank": 1,
+      "maker": "0x9Cad678f7D970afe0B9736Bae036877255a9dA84",
+      "amountOut": "1.831413",
+      "amountOutRaw": "1831413",
+      "vsFallbackBps": 0,
+      "vsMinOutBps": 1077.78,
+      "secondsLeft": 291,
+      "deadline": "2026-10-04T19:32:39.000Z",
+      "nonce": "5",
+      "makerCovered": true,
+      "topicSequence": 3,
+      "consensusTimestamp": "1791142062.367945796"
+    }
+  ],
+  "topic": {
+    "id": "0.0.10861214",
+    "link": "https://hashscan.io/testnet/topic/0.0.10861214"
+  },
+  "status": "SUCCESS"
+}
+
+== [taker] accept_quote
+Filled order 5: received 1.831413 USDC from 0x9Cad678f7D970afe0B9736Bae036877255a9dA84. https://hashscan.io/testnet/transaction/0.0.6511437-1791142071-078034753
+{
+  "transactionId": "0.0.6511437@1791142071.078034753",
+  "hash": "0x8e4afe91810593de389404f135d8c7bb0903924450eecfd5fb60e06d6c437688",
+  "account": "0.0.6511437",
+  "orderId": "5",
+  "orderStatus": "Filled",
+  "maker": "0x9Cad678f7D970afe0B9736Bae036877255a9dA84",
+  "received": "1.831413 USDC",
+  "receivedRaw": "1831413",
+  "balanceBefore": "14.684449",
+  "balanceAfter": "16.515862",
+  "overFallbackEstimateBps": 0,
+  "overMinOutBps": 1077.78,
+  "gasUsed": 202991,
+  "quoteMessage": {
+    "topic": "0.0.10861214",
+    "sequence": 3,
+    "link": "https://testnet.mirrornode.hedera.com/api/v1/topics/0.0.10861214/messages/3"
+  },
+  "links": {
+    "tx": "https://hashscan.io/testnet/transaction/0.0.6511437-1791142071-078034753",
+    "desk": "https://hashscan.io/testnet/contract/0x659380d965ee890fd93bf36c537dad80ee76f73c",
+    "maker": "https://hashscan.io/testnet/account/0x9Cad678f7D970afe0B9736Bae036877255a9dA84"
+  },
+  "status": "SUCCESS"
+}
+
+== [taker] get_order_status
+Order 5 is Filled: sells 1 WHBAR, floor 1.653231 USDC. Filled by a maker's signed quote.
+{
+  "orderId": "5",
+  "orderStatus": "Filled",
+  "taker": "0xbA3a9113eeD23fBBcFdeC616b5F5DB8897Ab038B",
+  "sells": "1 WHBAR",
+  "minBuys": "1.653231 USDC",
+  "amountInRaw": "100000000",
+  "minOutRaw": "1653231",
+  "fee": 3000,
+  "expiresAt": "2026-10-04T19:37:33.000Z",
+  "secondsLeft": 574,
+  "fallbackSchedule": null,
+  "rearms": 0,
+  "claimable": "0",
+  "agentIsTaker": true,
+  "links": {
+    "desk": "https://hashscan.io/testnet/contract/0x659380d965ee890fd93bf36c537dad80ee76f73c",
+    "taker": "https://hashscan.io/testnet/account/0xbA3a9113eeD23fBBcFdeC616b5F5DB8897Ab038B"
+  },
+  "status": "SUCCESS"
+}

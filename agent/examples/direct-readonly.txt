@@ -1,0 +1,72 @@
+desk 0x659380d965ee890fd93bf36c537dad80ee76f73c (GavelDesk)  topic 0.0.10861214  rpc https://testnet.hashio.io/api
+taker 0.0.6511437  maker 0.0.10859933  write flags off
+EIP-712 domain read from the desk: {"name":"Gavel","version":"1","chainId":296,"verifyingContract":"0x659380d965EE890fD93bf36C537dAd80ee76F73C"}
+orders posted on this desk: 5
+
+== [read] get_order_status
+Order 5 is Filled: sells 1 WHBAR, floor 1.653231 USDC. Filled by a maker's signed quote.
+{
+  "orderId": "5",
+  "orderStatus": "Filled",
+  "taker": "0xbA3a9113eeD23fBBcFdeC616b5F5DB8897Ab038B",
+  "sells": "1 WHBAR",
+  "minBuys": "1.653231 USDC",
+  "amountInRaw": "100000000",
+  "minOutRaw": "1653231",
+  "fee": 3000,
+  "expiresAt": "2026-10-04T19:37:33.000Z",
+  "secondsLeft": -1369,
+  "fallbackSchedule": null,
+  "rearms": 0,
+  "claimable": "0",
+  "agentIsTaker": false,
+  "links": {
+    "desk": "https://hashscan.io/testnet/contract/0x659380d965ee890fd93bf36c537dad80ee76f73c",
+    "taker": "https://hashscan.io/testnet/account/0xbA3a9113eeD23fBBcFdeC616b5F5DB8897Ab038B"
+  },
+  "status": "SUCCESS"
+}
+
+== [read] list_quotes
+Not sent: Order 5 is Filled, so it takes no more quotes.
+{
+  "orderStatus": "Filled",
+  "status": "ERROR",
+  "blocked": true,
+  "reasons": [
+    "Order 5 is Filled, so it takes no more quotes."
+  ]
+}
+
+== [read] post_order (RETURN_BYTES, not sent)
+Unsigned ContractExecuteTransaction ready: 2121 bytes, payer 0.0.4729347. Not sent.
+{
+  "status": "SUCCESS",
+  "transactionId": "0.0.4729347@1791144022.962223530",
+  "payerAccountId": "0.0.4729347",
+  "type": "ContractExecuteTransaction",
+  "expiresAt": "2026-10-04T20:02:22.962Z",
+  "memo": "",
+  "plan": {
+    "account": "0.0.4729347",
+    "sells": "2 WHBAR",
+    "minOut": "3.306464 USDC",
+    "spotOut": "3.673849",
+    "slippageBps": 1000,
+    "ttlSeconds": 600,
+    "fuel": "4 HBAR",
+    "warnings": []
+  }
+}
+
+== [read] quote_order (RETURN_BYTES, not sent)
+Not sent: No maker key is configured on this plugin, so it cannot sign quotes. Create the plugin with makerKey (MAKER_PRIVATE_KEY) to quote.
+{
+  "status": "ERROR",
+  "blocked": true,
+  "reasons": [
+    "No maker key is configured on this plugin, so it cannot sign quotes. Create the plugin with makerKey (MAKER_PRIVATE_KEY) to quote."
+  ]
+}
+
+Read-only run complete. Add --roundtrip 2 with DEPLOYER_PRIVATE_KEY and MAKER_PRIVATE_KEY set to send.

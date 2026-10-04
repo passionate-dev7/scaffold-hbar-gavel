@@ -1,0 +1,49 @@
+name: Scaffold gate
+
+# The bounty's eligibility gate, run the way a judge runs it: a fresh project created by the published
+# create-scaffold-hbar CLI from this repository, then install, test, lint, build, boot and load every route.
+# Runs daily as well, so a change in create-scaffold-hbar shows up here first.
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "23 5 * * *"
+  workflow_dispatch:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        package-manager: [yarn, npm]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup node env
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.7.1
+
+      - name: Git identity for the CLI's first commit
+        run: |
+          git config --global user.name "scaffold-gate"
+          git config --global user.email "scaffold-gate@users.noreply.github.com"
+
+      - name: Scaffold, test, lint, build, boot
+        env:
+          GATE_TEMPLATE: ${{ github.repository }}
+          # Lets the CLI download this repo while it is private; unused once public.
+          GIGET_AUTH: ${{ secrets.GITHUB_TOKEN }}
+          PM: ${{ matrix.package-manager }}
+        run: bash scripts/gate.sh

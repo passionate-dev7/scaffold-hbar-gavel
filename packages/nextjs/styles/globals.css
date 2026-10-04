@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@theme {
+  --shadow-center: 0 0 12px -2px rgb(0 0 0 / 0.05);
+  --animate-pulse-fast: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --color-hedera-ultraviolet: #8259ef;
+  --color-hedera-azure: #0031ff;
+  --color-hedera-charcoal: #11151d;
+  --color-hedera-indigo: #00156e;
+  --color-hedera-cobalt: #2d84eb;
+  --color-hedera-violet: #4f46e5;
+  --color-hedera-smoke: #9b9b9d;
+}
+
+/* next/font defines --font-plex-* on <body>; inline keeps the reference there instead of at :root. */
+@theme inline {
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@plugin "daisyui" {
+  themes:
+    light,
+    dark --prefersdark;
+}
+
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+  color-scheme: light;
+
+  --color-base-100: #fbfaf6;
+  --color-base-200: #f2f0e9;
+  --color-base-300: #dedbcf;
+  --color-base-content: #1a1b1f;
+  --color-primary: #3340c8;
+  --color-primary-content: #ffffff;
+  --color-secondary: #e4e7fa;
+  --color-secondary-content: #1a1b1f;
+  --color-accent: #3340c8;
+  --color-accent-content: #ffffff;
+  --color-neutral: #1a1b1f;
+  --color-neutral-content: #f2f0e9;
+  --color-info: #3340c8;
+  --color-success: #1d7a52;
+  --color-warning: #a8670e;
+  --color-error: #b93636;
+
+  --radius-selector: 0.375rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+  --depth: 0;
+  --noise: 0;
+  --tt-tailw: 6px;
+}
+
+@plugin "daisyui/theme" {
+  name: "dark";
+  prefersdark: true;
+  color-scheme: dark;
+
+  --color-base-100: #17181d;
+  --color-base-200: #101115;
+  --color-base-300: #2a2b33;
+  --color-base-content: #ecebe6;
+  --color-primary: #8b97ff;
+  --color-primary-content: #0d0f2b;
+  --color-secondary: #23263d;
+  --color-secondary-content: #ecebe6;
+  --color-accent: #8b97ff;
+  --color-accent-content: #0d0f2b;
+  --color-neutral: #ecebe6;
+  --color-neutral-content: #101115;
+  --color-info: #8b97ff;
+  --color-success: #4cc38a;
+  --color-warning: #e0a23a;
+  --color-error: #f0736b;
+
+  --radius-selector: 0.375rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+  --depth: 0;
+  --noise: 0;
+
+  --tt-tailw: 6px;
+  --tt-bg: var(--color-primary);
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-base-300, currentColor);
+  }
+
+  p {
+    margin: 1rem 0;
+  }
+
+  body {
+    min-height: 100vh;
+    font-family: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin-bottom: 0.5rem;
+    line-height: 1.15;
+  }
+
+  /* Basket segment colors. One slot per token, in holdings() order: WHBAR first, then the legs. */
+  :root,
+  [data-theme="light"] {
+    --seg-0: #2f3b52;
+    --seg-1: #a85a14;
+    --seg-2: #13806e;
+    --seg-3: #a83a62;
+    --seg-4: #5b68b8;
+    --seg-ink: #ffffff;
+  }
+
+  [data-theme="dark"] {
+    --seg-0: #9fb0d0;
+    --seg-1: #f0a24a;
+    --seg-2: #3cc4ab;
+    --seg-3: #e0709a;
+    --seg-4: #9aa5f0;
+    --seg-ink: #0e1018;
+  }
+}
+
+:root,
+[data-theme] {
+  background: var(--color-base-200);
+}
+
+.link {
+  text-underline-offset: 2px;
+}
+
+/* daisyUI dims a disabled button to 20% ink, which reads as missing. 55% keeps the label legible and still reads as off. */
+.btn:is(:disabled, [disabled]) {
+  color: color-mix(in oklab, var(--color-base-content) 55%, transparent);
+}
+
+:where(a, button, summary, input, [role="tab"]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.hedera-gradient {
+  background: linear-gradient(135deg, #8259ef 0%, #0031ff 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

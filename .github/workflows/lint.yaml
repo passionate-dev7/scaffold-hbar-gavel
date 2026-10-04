@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup node env
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: yarn
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.7.1
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Contract tests
+        run: yarn foundry:test
+
+      - name: Solidity lint and format
+        run: |
+          yarn foundry:lint
+          cd packages/foundry && forge fmt --check contracts test script
+
+      - name: Run nextjs lint
+        run: yarn next:lint --max-warnings=0
+
+      - name: Check typings on nextjs
+        run: yarn next:check-types
+
+      - name: Build the app
+        run: yarn next:build

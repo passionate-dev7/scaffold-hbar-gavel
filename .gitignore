@@ -26,3 +26,6 @@ dist
 
 .vercel
 .vercelignore
+
+# local proxy capture
+mitm_mcp_traffic.db

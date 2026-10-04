@@ -1,4 +1,4 @@
-// Hedera Consensus Service helper for the Backstop quote board. Keys are read from packages/foundry/.env inside the
+// Hedera Consensus Service helper for the Gavel quote board. Keys are read from packages/foundry/.env inside the
 // process and never printed.
 //
 //   node scripts-js/hcs.mjs create-topic [memo]              operator: deployer (DEPLOYER_PRIVATE_KEY, 0.0.10855086)
@@ -48,7 +48,7 @@ async function operator() {
 
 if (cmd === "create-topic") {
   const client = await operator();
-  const resp = await new TopicCreateTransaction().setTopicMemo(args[0] || "Backstop quote board").execute(client);
+  const resp = await new TopicCreateTransaction().setTopicMemo(args[0] || "Gavel quote board").execute(client);
   const receipt = await resp.getReceipt(client);
   if (receipt.status !== Status.Success) throw new Error(`topic create status ${receipt.status}`);
   console.log(JSON.stringify({ topicId: receipt.topicId.toString(), txId: resp.transactionId.toString() }));

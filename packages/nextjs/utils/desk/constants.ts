@@ -3,11 +3,11 @@ import { hederaTestnet } from "viem/chains";
 import deployedContracts from "~~/contracts/deployedContracts";
 
 /** The only place the product's display name lives. */
-export const PRODUCT_NAME = "Backstop";
+export const PRODUCT_NAME = "Gavel";
 
 export const CHAIN_ID = hederaTestnet.id;
 
-const deployed = deployedContracts[CHAIN_ID].BackstopDesk;
+const deployed = deployedContracts[CHAIN_ID].GavelDesk;
 
 export const DESK_ABI = deployed.abi;
 export const DESK_ADDRESS = deployed.address as Address;

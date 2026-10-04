@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runs every Backstop flow once on Hedera testnet and prints a HashScan link per step:
+# Runs every Gavel flow once on Hedera testnet and prints a HashScan link per step:
 # deploy, associate, HCS quote topic, a maker with USDC and an allowance, then
 #   order A: a maker quote posted to the topic and filled with it,
 #   order B: no quote, the desk's own scheduled call swaps the escrow on SaucerSwap with no human transaction,
@@ -95,8 +95,8 @@ mkdir -p deployments
 if [ -z "${DESK:-}" ]; then
   forge script script/Deploy.s.sol --rpc-url "$RPC" --private-key "$DEPLOYER_PRIVATE_KEY" --broadcast --slow --legacy >/dev/null
   node scripts-js/generateTsAbis.js >/dev/null
-  DESK=$(jq -r '[to_entries[] | select(.value == "BackstopDesk") | .key] | last' deployments/296.json)
-  echo "Deployed BackstopDesk $DESK  $HASHSCAN/contract/$DESK"
+  DESK=$(jq -r '[to_entries[] | select(.value == "GavelDesk") | .key] | last' deployments/296.json)
+  echo "Deployed GavelDesk $DESK  $HASHSCAN/contract/$DESK"
   send "associate WHBAR USDC SAUCE" "$DESK" "associateTokens(address[])" "[$WHBAR,$USDC,$SAUCE]" --gas-limit 4000000
 fi
 setenv DESK_ADDRESS "$DESK"
@@ -105,7 +105,7 @@ echo "Desk contract id $DESK_ID  fuelPerOrder=$(num "$DESK" "fuelPerOrder()(uint
 
 # ---------------------------------------------------------------- HCS quote topic
 if [ -z "${QUOTE_TOPIC_ID:-}" ]; then
-  QUOTE_TOPIC_ID=$(node scripts-js/hcs.mjs create-topic "Backstop quote board" | jq -r .topicId)
+  QUOTE_TOPIC_ID=$(node scripts-js/hcs.mjs create-topic "Gavel quote board" | jq -r .topicId)
   setenv QUOTE_TOPIC_ID "$QUOTE_TOPIC_ID"
 fi
 echo "Quote topic $QUOTE_TOPIC_ID  $HASHSCAN/topic/$QUOTE_TOPIC_ID"

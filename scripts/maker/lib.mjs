@@ -5,10 +5,10 @@ export const HEDERA_TESTNET_CHAIN_ID = 296;
 export const BPS = 10_000n;
 export const Q192 = 1n << 192n;
 
-export const DOMAIN_NAME = "Backstop";
+export const DOMAIN_NAME = "Gavel";
 export const DOMAIN_VERSION = "1";
 
-// Must equal the QUOTE_TYPEHASH string in BackstopDesk.sol.
+// Must equal the QUOTE_TYPEHASH string in GavelDesk.sol.
 export const QUOTE_TYPES = {
   Quote: [
     { name: "orderId", type: "uint256" },

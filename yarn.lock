@@ -9955,9 +9955,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"scaffold-hbar-backstop@workspace:.":
+"scaffold-hbar-gavel@workspace:.":
   version: 0.0.0-use.local
-  resolution: "scaffold-hbar-backstop@workspace:."
+  resolution: "scaffold-hbar-gavel@workspace:."
   dependencies:
     husky: ^9.1.6
     lint-staged: ^15.2.10

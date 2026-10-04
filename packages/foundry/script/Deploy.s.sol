@@ -2,9 +2,9 @@
 pragma solidity ^0.8.28;
 
 import { ScaffoldETHDeploy } from "./DeployHelpers.s.sol";
-import { BackstopDesk } from "../contracts/BackstopDesk.sol";
+import { GavelDesk } from "../contracts/GavelDesk.sol";
 
-/// @notice Deploys the BackstopDesk against SaucerSwap V2 and Chainlink on Hedera testnet.
+/// @notice Deploys the GavelDesk against SaucerSwap V2 and Chainlink on Hedera testnet.
 /// @dev Addresses are Hedera testnet; swap them for mainnet. Env overrides, all optional:
 /// FUEL_PER_ORDER (tinybar, default 400000000 = 4 HBAR) is the native HBAR every order sends so its fallback can pay
 /// for itself; the Schedule Service reserves SCHEDULED_GAS (default 3000000) times the gas price when it runs.
@@ -12,8 +12,8 @@ import { BackstopDesk } from "../contracts/BackstopDesk.sol";
 /// MAX_ORACLE_AGE (seconds, default 90000, the 24 hour heartbeat plus an hour) bounds the feed's staleness.
 contract DeployScript is ScaffoldETHDeploy {
     function run() external ScaffoldEthDeployerRunner {
-        BackstopDesk desk = new BackstopDesk(
-            BackstopDesk.Config({
+        GavelDesk desk = new GavelDesk(
+            GavelDesk.Config({
                 router: 0x0000000000000000000000000000000000159398, // SwapRouter 0.0.1414040
                 factory: 0x00000000000000000000000000000000001243eE, // SaucerSwapV2Factory 0.0.1197038
                 whbarHelper: 0x000000000000000000000000000000000050a8a7, // WhbarHelper 0.0.5286055
@@ -27,6 +27,6 @@ contract DeployScript is ScaffoldETHDeploy {
                 scheduledGas: vm.envOr("SCHEDULED_GAS", uint256(3_000_000))
             })
         );
-        deployments.push(Deployment({ name: "BackstopDesk", addr: address(desk) }));
+        deployments.push(Deployment({ name: "GavelDesk", addr: address(desk) }));
     }
 }

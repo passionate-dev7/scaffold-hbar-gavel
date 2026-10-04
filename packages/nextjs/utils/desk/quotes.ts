@@ -1,6 +1,6 @@
 import { type Address, type Hex, isAddress, verifyTypedData } from "viem";
 
-/** Must match QUOTE_TYPEHASH in BackstopDesk.sol. */
+/** Must match QUOTE_TYPEHASH in GavelDesk.sol. */
 export const QUOTE_TYPES = {
   Quote: [
     { name: "orderId", type: "uint256" },

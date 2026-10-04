@@ -1,6 +1,6 @@
-# Backstop maker bot
+# Gavel maker bot
 
-A market maker for the Backstop desk. It watches `OrderPosted` events, prices each open order from the SaucerSwap V2 pool, signs an EIP-712 `Quote`, and posts the quote to a Hedera Consensus Service topic. Takers read the topic from the mirror node, verify the signature, and settle the best quote with `fillWithQuote`. The bot keeps the desk's allowance on `tokenOut` topped up. Fills are taker-only (`OnlyTaker`): the order's taker accepts a quote, the maker never settles its own.
+A market maker for the Gavel desk. It watches `OrderPosted` events, prices each open order from the SaucerSwap V2 pool, signs an EIP-712 `Quote`, and posts the quote to a Hedera Consensus Service topic. Takers read the topic from the mirror node, verify the signature, and settle the best quote with `fillWithQuote`. The bot keeps the desk's allowance on `tokenOut` topped up. Fills are taker-only (`OnlyTaker`): the order's taker accepts a quote, the maker never settles its own.
 
 It is a plain Node script with its own `package.json` (viem and `@hiero-ledger/sdk` only) and sits outside the repo's yarn workspaces.
 
@@ -20,7 +20,7 @@ The maker account needs `tokenOut` for the pairs it quotes (WHBAR, USDC or SAUCE
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `DESK_ADDRESS` | required | BackstopDesk contract address |
+| `DESK_ADDRESS` | required | GavelDesk contract address |
 | `QUOTE_TOPIC_ID` | required unless `--dry-run` | HCS topic that carries the quotes, for example `0.0.12345` |
 | `MAKER_PRIVATE_KEY` | `DEPLOYER_PRIVATE_KEY` | ECDSA (secp256k1) key, hex. Signs quotes, pays HCS fees, sends approvals |
 | `MAKER_ACCOUNT_ID` | looked up on the mirror node | Hedera account id of that key, the HCS operator |
@@ -56,11 +56,11 @@ Run from the repo root as above, or from `scripts/maker` with `npm run dry-run`,
 ## The EIP-712 quote
 
 ```
-domain: { name: "Backstop", version: "1", chainId: 296, verifyingContract: <desk> }
+domain: { name: "Gavel", version: "1", chainId: 296, verifyingContract: <desk> }
 Quote(uint256 orderId,address maker,uint256 amountOut,uint64 deadline,uint256 nonce)
 ```
 
-`lib.mjs` exports `quoteDigest`, which equals `BackstopDesk.quoteDigest(orderId, quote)` byte for byte. The unit tests pin it to a digest produced by the compiled contract and to a signature produced by `cast wallet sign --data`. The nonce is the order id, so a quote can be re-posted with a later deadline without burning a second nonce, and `invalidateNonce` on the desk withdraws it.
+`lib.mjs` exports `quoteDigest`, which equals `GavelDesk.quoteDigest(orderId, quote)` byte for byte. The unit tests pin it to a digest produced by the compiled contract and to a signature produced by `cast wallet sign --data`. The nonce is the order id, so a quote can be re-posted with a later deadline without burning a second nonce, and `invalidateNonce` on the desk withdraws it.
 
 ## The HCS message
 

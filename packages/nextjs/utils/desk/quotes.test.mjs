@@ -4,7 +4,7 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { QUOTE_TYPES, assessQuote, bpsOver, parseQuote, sortQuotes, verifyQuote } from "./quotes.ts";
 
 const DOMAIN = {
-  name: "Backstop",
+  name: "Gavel",
   version: "1",
   chainId: 296,
   verifyingContract: "0xe48eC020C7D928330c788f1AC448F72C7d116960",

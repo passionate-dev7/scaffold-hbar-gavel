@@ -13,7 +13,7 @@ import { IHRC719 } from "./interfaces/IHRC719.sol";
 import { ISaucerSwapV2Router, ISaucerSwapV2Factory, IWhbarHelper } from "./interfaces/ISaucerSwapV2.sol";
 import { AggregatorV3Interface } from "./interfaces/AggregatorV3Interface.sol";
 
-/// @title BackstopDesk
+/// @title GavelDesk
 /// @notice An RFQ desk with a guaranteed exit. A taker escrows a swap order. Market makers answer with EIP-712 quotes
 /// posted to a Hedera Consensus Service topic; the best quote settles atomically here through HTS allowances, inside
 /// a Chainlink sanity band. If nobody fills before the order expires, the order's own Hedera Schedule Service call
@@ -21,7 +21,7 @@ import { AggregatorV3Interface } from "./interfaces/AggregatorV3Interface.sol";
 /// @dev No owner, no admin, no fee. Native HBAR in the desk is fuel for scheduled fallbacks. Each order pays
 /// `fuelPerOrder` up front; a fill or a cancel deletes the schedule and refunds that fuel in full, a fallback keeps it
 /// to pay for the run and to keep the pool deep for the next one.
-contract BackstopDesk is EIP712, ReentrancyGuard {
+contract GavelDesk is EIP712, ReentrancyGuard {
     enum Status {
         Open,
         Filled,
@@ -167,7 +167,7 @@ contract BackstopDesk is EIP712, ReentrancyGuard {
     error NothingToClaim(uint256 id);
     error CannotRearm(uint256 id);
 
-    constructor(Config memory c) EIP712("Backstop", "1") {
+    constructor(Config memory c) EIP712("Gavel", "1") {
         if (
             c.router == address(0) || c.factory == address(0) || c.whbarHelper == address(0) || c.whbar == address(0)
                 || c.hbarUsdFeed == address(0) || c.usdToken == address(0) || c.usdDecimals > 18 || c.maxOracleAge == 0

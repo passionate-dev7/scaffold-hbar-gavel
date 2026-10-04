@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { BackstopDesk } from "../contracts/BackstopDesk.sol";
+import { GavelDesk } from "../contracts/GavelDesk.sol";
 import { MockHss } from "./mocks/MockHederaSystem.sol";
 import { MockHtsToken } from "./mocks/MockHtsToken.sol";
-import { BackstopBase } from "./BackstopBase.sol";
+import { GavelBase } from "./GavelBase.sol";
 
-contract BackstopPostTest is BackstopBase {
+contract GavelPostTest is GavelBase {
     // ------------------------------------------------------------ constructor
 
     function test_constructor_storesTheConfig() public view {
@@ -21,55 +21,55 @@ contract BackstopPostTest is BackstopBase {
     }
 
     function test_constructor_rejectsScheduledGasBelowThreeMillion() public {
-        BackstopDesk.Config memory c = _config();
+        GavelDesk.Config memory c = _config();
         c.scheduledGas = 2_999_999;
-        vm.expectRevert(BackstopDesk.BadConfig.selector);
+        vm.expectRevert(GavelDesk.BadConfig.selector);
         _deployDesk(c);
     }
 
     function test_constructor_rejectsZeroFuel() public {
-        BackstopDesk.Config memory c = _config();
+        GavelDesk.Config memory c = _config();
         c.fuelPerOrder = 0;
-        vm.expectRevert(BackstopDesk.BadConfig.selector);
+        vm.expectRevert(GavelDesk.BadConfig.selector);
         _deployDesk(c);
     }
 
     function test_constructor_rejectsBadBand() public {
-        BackstopDesk.Config memory c = _config();
+        GavelDesk.Config memory c = _config();
         c.maxDeviationBps = 0;
-        vm.expectRevert(BackstopDesk.BadConfig.selector);
+        vm.expectRevert(GavelDesk.BadConfig.selector);
         _deployDesk(c);
         c.maxDeviationBps = 10_000;
-        vm.expectRevert(BackstopDesk.BadConfig.selector);
+        vm.expectRevert(GavelDesk.BadConfig.selector);
         _deployDesk(c);
     }
 
     function test_constructor_rejectsZeroAddressesAndZeroOracleAge() public {
-        BackstopDesk.Config memory c = _config();
+        GavelDesk.Config memory c = _config();
         c.router = address(0);
-        vm.expectRevert(BackstopDesk.BadConfig.selector);
+        vm.expectRevert(GavelDesk.BadConfig.selector);
         _deployDesk(c);
         c = _config();
         c.usdToken = address(0);
-        vm.expectRevert(BackstopDesk.BadConfig.selector);
+        vm.expectRevert(GavelDesk.BadConfig.selector);
         _deployDesk(c);
         c = _config();
         c.maxOracleAge = 0;
-        vm.expectRevert(BackstopDesk.BadConfig.selector);
+        vm.expectRevert(GavelDesk.BadConfig.selector);
         _deployDesk(c);
     }
 
     function test_constructor_rejectsAbsurdStablecoinDecimals() public {
-        BackstopDesk.Config memory c = _config();
+        GavelDesk.Config memory c = _config();
         c.usdDecimals = 19;
-        vm.expectRevert(BackstopDesk.BadConfig.selector);
+        vm.expectRevert(GavelDesk.BadConfig.selector);
         _deployDesk(c);
         assertEq(desk.usdDecimals(), 6);
     }
 
     function test_constructor_rejectsAFeedThatIsNotEightDecimals() public {
         feed.setDecimals(18);
-        vm.expectRevert(BackstopDesk.BadConfig.selector);
+        vm.expectRevert(GavelDesk.BadConfig.selector);
         _deployDesk(_config());
     }
 
@@ -83,7 +83,7 @@ contract BackstopPostTest is BackstopBase {
         assertEq(address(desk).balance, FUEL, "the rest is fuel");
         assertEq(desk.escrowed(WHBAR_ADDR), AMOUNT_IN);
         assertEq(helper.depositCount(), 1);
-        BackstopDesk.Order memory o = desk.getOrder(id);
+        GavelDesk.Order memory o = desk.getOrder(id);
         assertEq(o.taker, taker);
         assertEq(o.tokenIn, WHBAR_ADDR);
         assertEq(o.tokenOut, USDC_ADDR);
@@ -92,7 +92,7 @@ contract BackstopPostTest is BackstopBase {
         assertEq(o.minOut, MIN_OUT);
         assertEq(o.expiry, T0 + TTL);
         assertEq(o.fuel, FUEL);
-        assertEq(uint8(o.status), uint8(BackstopDesk.Status.Open));
+        assertEq(uint8(o.status), uint8(GavelDesk.Status.Open));
     }
 
     function test_post_extraValueBecomesRefundableFuel() public {
@@ -105,7 +105,7 @@ contract BackstopPostTest is BackstopBase {
     function test_post_revertsWhenFuelIsShort() public {
         vm.prank(taker);
         vm.expectRevert(
-            abi.encodeWithSelector(BackstopDesk.InsufficientValue.selector, AMOUNT_IN + FUEL - 1, AMOUNT_IN + FUEL)
+            abi.encodeWithSelector(GavelDesk.InsufficientValue.selector, AMOUNT_IN + FUEL - 1, AMOUNT_IN + FUEL)
         );
         desk.postOrder{ value: AMOUNT_IN + FUEL - 1 }(WHBAR_ADDR, USDC_ADDR, FEE, AMOUNT_IN, MIN_OUT, TTL);
     }
@@ -152,7 +152,7 @@ contract BackstopPostTest is BackstopBase {
         usdc.mint(taker, 50e6);
         vm.startPrank(taker);
         usdc.approve(address(desk), 50e6);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.InsufficientValue.selector, FUEL - 1, FUEL));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.InsufficientValue.selector, FUEL - 1, FUEL));
         desk.postOrder{ value: FUEL - 1 }(USDC_ADDR, WHBAR_ADDR, FEE, 50e6, 200e8, TTL);
         vm.stopPrank();
     }
@@ -161,18 +161,18 @@ contract BackstopPostTest is BackstopBase {
 
     function test_post_rejectsZeroAmountAndZeroMinOut() public {
         vm.startPrank(taker);
-        vm.expectRevert(BackstopDesk.ZeroAmount.selector);
+        vm.expectRevert(GavelDesk.ZeroAmount.selector);
         desk.postOrder{ value: FUEL }(WHBAR_ADDR, USDC_ADDR, FEE, 0, MIN_OUT, TTL);
-        vm.expectRevert(BackstopDesk.ZeroAmount.selector);
+        vm.expectRevert(GavelDesk.ZeroAmount.selector);
         desk.postOrder{ value: AMOUNT_IN + FUEL }(WHBAR_ADDR, USDC_ADDR, FEE, AMOUNT_IN, 0, TTL);
         vm.stopPrank();
     }
 
     function test_post_rejectsTtlOutsideTheWindow() public {
         vm.startPrank(taker);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.BadTtl.selector, 59));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.BadTtl.selector, 59));
         desk.postOrder{ value: AMOUNT_IN + FUEL }(WHBAR_ADDR, USDC_ADDR, FEE, AMOUNT_IN, MIN_OUT, 59);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.BadTtl.selector, 60 days + 1));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.BadTtl.selector, 60 days + 1));
         desk.postOrder{ value: AMOUNT_IN + FUEL }(WHBAR_ADDR, USDC_ADDR, FEE, AMOUNT_IN, MIN_OUT, 60 days + 1);
         desk.postOrder{ value: AMOUNT_IN + FUEL }(WHBAR_ADDR, USDC_ADDR, FEE, AMOUNT_IN, MIN_OUT, 60);
         desk.postOrder{ value: AMOUNT_IN + FUEL }(WHBAR_ADDR, USDC_ADDR, FEE, AMOUNT_IN, MIN_OUT, 60 days);
@@ -181,7 +181,7 @@ contract BackstopPostTest is BackstopBase {
 
     function test_post_rejectsSameToken() public {
         vm.prank(taker);
-        vm.expectRevert(BackstopDesk.SameToken.selector);
+        vm.expectRevert(GavelDesk.SameToken.selector);
         desk.postOrder{ value: AMOUNT_IN + FUEL }(WHBAR_ADDR, WHBAR_ADDR, FEE, AMOUNT_IN, MIN_OUT, TTL);
     }
 
@@ -190,9 +190,9 @@ contract BackstopPostTest is BackstopBase {
         usdc.mint(taker, 1e6);
         vm.startPrank(taker);
         usdc.approve(address(desk), 1e6);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.NoPool.selector, USDC_ADDR, SAUCE_ADDR, FEE));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.NoPool.selector, USDC_ADDR, SAUCE_ADDR, FEE));
         desk.postOrder{ value: FUEL }(USDC_ADDR, SAUCE_ADDR, FEE, 1e6, 1, TTL);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.NoPool.selector, WHBAR_ADDR, USDC_ADDR, uint24(500)));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.NoPool.selector, WHBAR_ADDR, USDC_ADDR, uint24(500)));
         desk.postOrder{ value: AMOUNT_IN + FUEL }(WHBAR_ADDR, USDC_ADDR, 500, AMOUNT_IN, MIN_OUT, TTL);
         vm.stopPrank();
     }
@@ -200,7 +200,7 @@ contract BackstopPostTest is BackstopBase {
     function test_post_revertsWhenTheDeskCannotAssociate() public {
         whbar.setForcedAssociateCode(167);
         vm.prank(taker);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.HtsCallFailed.selector, int64(167)));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.HtsCallFailed.selector, int64(167)));
         desk.postOrder{ value: AMOUNT_IN + FUEL }(WHBAR_ADDR, USDC_ADDR, FEE, AMOUNT_IN, MIN_OUT, TTL);
     }
 
@@ -214,14 +214,14 @@ contract BackstopPostTest is BackstopBase {
         assertEq(c.expirySecond, T0 + TTL);
         assertEq(c.gasLimit, SCHEDULED_GAS);
         assertEq(c.value, 0);
-        assertEq(c.callData, abi.encodeCall(BackstopDesk.fallbackFill, (id)));
+        assertEq(c.callData, abi.encodeCall(GavelDesk.fallbackFill, (id)));
         assertEq(desk.getOrder(id).schedule, c.schedule);
         assertTrue(c.schedule != address(0));
     }
 
     function test_post_emitsTheOrderForMakersToRead() public {
         vm.expectEmit(true, true, false, true);
-        emit BackstopDesk.OrderPosted(
+        emit GavelDesk.OrderPosted(
             1,
             taker,
             WHBAR_ADDR,
@@ -257,7 +257,7 @@ contract BackstopPostTest is BackstopBase {
             hss.setBusy(T0 + TTL + d, true);
         }
         vm.prank(taker);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.ScheduleFailed.selector, int64(370)));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.ScheduleFailed.selector, int64(370)));
         desk.postOrder{ value: AMOUNT_IN + FUEL }(WHBAR_ADDR, USDC_ADDR, FEE, AMOUNT_IN, MIN_OUT, TTL);
         assertEq(desk.orderCount(), 0, "an order without a fallback is not taken");
         assertEq(whbar.balanceOf(address(desk)), 0);
@@ -266,7 +266,7 @@ contract BackstopPostTest is BackstopBase {
     function test_post_revertsWhenTheScheduleServiceRefuses() public {
         hss.setForcedCodes(373, 0);
         vm.prank(taker);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.ScheduleFailed.selector, int64(373)));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.ScheduleFailed.selector, int64(373)));
         desk.postOrder{ value: AMOUNT_IN + FUEL }(WHBAR_ADDR, USDC_ADDR, FEE, AMOUNT_IN, MIN_OUT, TTL);
     }
 

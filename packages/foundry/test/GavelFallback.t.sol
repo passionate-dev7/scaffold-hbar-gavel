@@ -3,12 +3,12 @@ pragma solidity ^0.8.28;
 
 import { Vm } from "forge-std/Vm.sol";
 
-import { BackstopDesk } from "../contracts/BackstopDesk.sol";
+import { GavelDesk } from "../contracts/GavelDesk.sol";
 import { ISaucerSwapV2Router } from "../contracts/interfaces/ISaucerSwapV2.sol";
 import { MockHss } from "./mocks/MockHederaSystem.sol";
 import { MockHtsToken } from "./mocks/MockHtsToken.sol";
 import { MockPool } from "./mocks/MockSaucerSwap.sol";
-import { BackstopBase } from "./BackstopBase.sol";
+import { GavelBase } from "./GavelBase.sol";
 
 /// A router that burns every unit of gas it is given.
 contract GasBurnRouter is ISaucerSwapV2Router {
@@ -39,7 +39,7 @@ contract HeavyToken is MockHtsToken {
     }
 }
 
-contract BackstopFallbackTest is BackstopBase {
+contract GavelFallbackTest is GavelBase {
     uint256 internal id;
 
     function setUp() public override {
@@ -51,7 +51,7 @@ contract BackstopFallbackTest is BackstopBase {
     /// rounding.
     uint256 internal constant SWAP_OUT = 19_940_000;
 
-    function _expectedStatus(BackstopDesk.Status s) internal view returns (bool) {
+    function _expectedStatus(GavelDesk.Status s) internal view returns (bool) {
         return _status(id) == s;
     }
 
@@ -71,7 +71,7 @@ contract BackstopFallbackTest is BackstopBase {
         assertEq(abi.decode(logs[i].data, (uint256)), got, "the event reports what the taker received");
         assertEq(whbar.balanceOf(address(desk)), 0, "the escrow was spent");
         assertEq(desk.escrowed(WHBAR_ADDR), 0);
-        assertEq(uint8(_status(id)), uint8(BackstopDesk.Status.FellBack));
+        assertEq(uint8(_status(id)), uint8(GavelDesk.Status.FellBack));
     }
 
     function test_fallback_swapsAtTheTakersOwnFloor() public {
@@ -118,7 +118,7 @@ contract BackstopFallbackTest is BackstopBase {
         vm.stopPrank();
         uint256 before = whbar.balanceOf(taker);
         _runSchedule(1);
-        assertEq(uint8(_status(rid)), uint8(BackstopDesk.Status.FellBack));
+        assertEq(uint8(_status(rid)), uint8(GavelDesk.Status.FellBack));
         assertApproxEqAbs(whbar.balanceOf(taker), before + 20e6 * 500 * 997_000 / 1_000_000, 20_000);
     }
 
@@ -133,7 +133,7 @@ contract BackstopFallbackTest is BackstopBase {
         assertTrue(ok, "the scheduled call itself must not revert");
         assertEq(whbar.balanceOf(taker), takerWhbar + AMOUNT_IN, "the taker gets the escrow back");
         assertEq(usdc.balanceOf(taker), 0);
-        assertEq(uint8(_status(id)), uint8(BackstopDesk.Status.Refunded));
+        assertEq(uint8(_status(id)), uint8(GavelDesk.Status.Refunded));
         assertEq(desk.escrowed(WHBAR_ADDR), 0);
         assertEq(desk.getOrder(id).claimable, 0);
         Vm.Log[] memory logs = vm.getRecordedLogs();
@@ -153,7 +153,7 @@ contract BackstopFallbackTest is BackstopBase {
         vm.stopPrank();
         (, bool ok,) = _runSchedule(1);
         assertTrue(ok);
-        assertEq(uint8(_status(nid)), uint8(BackstopDesk.Status.Refunded));
+        assertEq(uint8(_status(nid)), uint8(GavelDesk.Status.Refunded));
         assertEq(whbar.balanceOf(noUsdc), AMOUNT_IN, "the escrow went home instead of vanishing in the router");
     }
 
@@ -165,7 +165,7 @@ contract BackstopFallbackTest is BackstopBase {
         uint256 nid = desk.postOrder{ value: AMOUNT_IN + FUEL }(WHBAR_ADDR, USDC_ADDR, FEE, AMOUNT_IN, MIN_OUT, TTL);
         (, bool ok,) = _runSchedule(1);
         assertTrue(ok, "an unpayable refund still does not revert the scheduled call");
-        assertEq(uint8(_status(nid)), uint8(BackstopDesk.Status.Refunded));
+        assertEq(uint8(_status(nid)), uint8(GavelDesk.Status.Refunded));
         assertEq(desk.getOrder(nid).claimable, AMOUNT_IN);
         assertEq(desk.escrowed(WHBAR_ADDR), AMOUNT_IN + AMOUNT_IN, "the unpaid escrow stays on the books");
         assertEq(whbar.balanceOf(address(desk)), desk.escrowed(WHBAR_ADDR), "order 1 open plus the unpaid refund");
@@ -187,7 +187,7 @@ contract BackstopFallbackTest is BackstopBase {
         vm.startPrank(newcomer);
         whbar.associate();
         vm.expectEmit(true, false, false, true);
-        emit BackstopDesk.Claimed(nid, AMOUNT_IN);
+        emit GavelDesk.Claimed(nid, AMOUNT_IN);
         desk.claim(nid);
         vm.stopPrank();
         assertEq(whbar.balanceOf(newcomer), AMOUNT_IN);
@@ -195,7 +195,7 @@ contract BackstopFallbackTest is BackstopBase {
         assertEq(desk.escrowed(WHBAR_ADDR), AMOUNT_IN, "only order 1 remains escrowed");
 
         vm.prank(newcomer);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.NothingToClaim.selector, nid));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.NothingToClaim.selector, nid));
         desk.claim(nid);
     }
 
@@ -207,19 +207,19 @@ contract BackstopFallbackTest is BackstopBase {
         uint256 nid = desk.postOrder{ value: AMOUNT_IN + FUEL }(WHBAR_ADDR, USDC_ADDR, FEE, AMOUNT_IN, MIN_OUT, TTL);
         _runSchedule(1);
         vm.prank(keeper);
-        vm.expectRevert(BackstopDesk.OnlyTaker.selector);
+        vm.expectRevert(GavelDesk.OnlyTaker.selector);
         desk.claim(nid);
     }
 
     function test_claim_nothingToClaimOnAnOpenOrder() public {
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.NothingToClaim.selector, id));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.NothingToClaim.selector, id));
         desk.claim(id);
     }
 
     function test_fallback_aRouterThatBurnsAllItsGasStillRefunds() public {
-        BackstopDesk.Config memory c = _config();
+        GavelDesk.Config memory c = _config();
         c.router = address(new GasBurnRouter());
-        BackstopDesk d = _deployDesk(c);
+        GavelDesk d = _deployDesk(c);
         vm.prank(taker);
         uint256 bid = d.postOrder{ value: AMOUNT_IN + FUEL }(WHBAR_ADDR, USDC_ADDR, FEE, AMOUNT_IN, MIN_OUT, TTL);
         uint256 takerWhbar = whbar.balanceOf(taker);
@@ -227,7 +227,7 @@ contract BackstopFallbackTest is BackstopBase {
         vm.prank(address(d));
         (bool ok,) = address(d).call{ gas: call.gasLimit }(call.callData);
         assertTrue(ok, "the booked call completes");
-        assertEq(uint8(d.getOrder(bid).status), uint8(BackstopDesk.Status.Refunded));
+        assertEq(uint8(d.getOrder(bid).status), uint8(GavelDesk.Status.Refunded));
         assertEq(whbar.balanceOf(taker), takerWhbar + AMOUNT_IN);
     }
 
@@ -237,9 +237,9 @@ contract BackstopFallbackTest is BackstopBase {
         HeavyToken heavy = new HeavyToken();
         MockPool heavyPool = new MockPool(address(heavy), USDC_ADDR, FEE);
         factory.registerPool(address(heavyPool));
-        BackstopDesk.Config memory c = _config();
+        GavelDesk.Config memory c = _config();
         c.router = address(new GasBurnRouter());
-        BackstopDesk d = _deployDesk(c);
+        GavelDesk d = _deployDesk(c);
         vm.startPrank(taker);
         heavy.associate();
         heavy.mint(taker, 1_000e6);
@@ -250,46 +250,46 @@ contract BackstopFallbackTest is BackstopBase {
         vm.prank(address(d));
         (bool ok,) = address(d).call{ gas: call.gasLimit }(call.callData);
         assertTrue(ok);
-        BackstopDesk.Order memory o = d.getOrder(hid);
-        assertEq(uint8(o.status), uint8(BackstopDesk.Status.Refunded));
+        GavelDesk.Order memory o = d.getOrder(hid);
+        assertEq(uint8(o.status), uint8(GavelDesk.Status.Refunded));
         assertEq(o.claimable, 0, "the refund was paid, not parked");
         assertEq(heavy.balanceOf(taker), 1_000e6);
     }
 
     function test_fallback_aRevertPayloadBombCannotStopTheRefund() public {
-        BackstopDesk.Config memory c = _config();
+        GavelDesk.Config memory c = _config();
         c.router = address(new ReturnBombRouter());
-        BackstopDesk d = _deployDesk(c);
+        GavelDesk d = _deployDesk(c);
         vm.prank(taker);
         uint256 bid = d.postOrder{ value: AMOUNT_IN + FUEL }(WHBAR_ADDR, USDC_ADDR, FEE, AMOUNT_IN, MIN_OUT, TTL);
         MockHss.ScheduledCall memory call = hss.callAt(hss.callCount() - 1);
         vm.prank(address(d));
         (bool ok,) = address(d).call{ gas: call.gasLimit }(call.callData);
         assertTrue(ok);
-        assertEq(uint8(d.getOrder(bid).status), uint8(BackstopDesk.Status.Refunded));
+        assertEq(uint8(d.getOrder(bid).status), uint8(GavelDesk.Status.Refunded));
     }
 
     // ------------------------------------------------------------ the scheduled path never reverts
 
     function test_fallback_onlyTheDeskItselfMayCall() public {
         vm.prank(keeper);
-        vm.expectRevert(BackstopDesk.OnlySelf.selector);
+        vm.expectRevert(GavelDesk.OnlySelf.selector);
         desk.fallbackFill(id);
         vm.prank(taker);
-        vm.expectRevert(BackstopDesk.OnlySelf.selector);
+        vm.expectRevert(GavelDesk.OnlySelf.selector);
         desk.swapEscrow(id);
-        assertEq(uint8(_status(id)), uint8(BackstopDesk.Status.Open));
+        assertEq(uint8(_status(id)), uint8(GavelDesk.Status.Open));
     }
 
     function test_fallback_skipsAnOrderThatWasFilled() public {
         _fill(id, 19_500_000, 1);
         uint256 takerUsdc = usdc.balanceOf(taker);
         vm.expectEmit(true, false, false, true);
-        emit BackstopDesk.FallbackSkipped(id, BackstopDesk.Status.Filled);
+        emit GavelDesk.FallbackSkipped(id, GavelDesk.Status.Filled);
         vm.prank(address(desk));
         desk.fallbackFill(id);
         assertEq(usdc.balanceOf(taker), takerUsdc, "no second payout");
-        assertEq(uint8(_status(id)), uint8(BackstopDesk.Status.Filled));
+        assertEq(uint8(_status(id)), uint8(GavelDesk.Status.Filled));
     }
 
     function test_fallback_skipsAnOrderThatWasCancelled() public {
@@ -297,7 +297,7 @@ contract BackstopFallbackTest is BackstopBase {
         desk.cancel(id);
         vm.prank(address(desk));
         desk.fallbackFill(id);
-        assertEq(uint8(_status(id)), uint8(BackstopDesk.Status.Cancelled));
+        assertEq(uint8(_status(id)), uint8(GavelDesk.Status.Cancelled));
         assertEq(router.swapCount(), 0);
     }
 
@@ -313,7 +313,7 @@ contract BackstopFallbackTest is BackstopBase {
         vm.prank(address(desk));
         desk.fallbackFill(id);
         assertEq(router.swapCount(), swaps);
-        assertEq(uint8(_status(id)), uint8(BackstopDesk.Status.FellBack));
+        assertEq(uint8(_status(id)), uint8(GavelDesk.Status.FellBack));
     }
 
     function test_fallback_aDeletedScheduleNeverRuns() public {
@@ -329,26 +329,26 @@ contract BackstopFallbackTest is BackstopBase {
         vm.warp(T0 + TTL + 300);
         feed.set(HBAR_USD, block.timestamp);
         vm.expectEmit(true, false, false, false);
-        emit BackstopDesk.Rearmed(id, address(0), 0);
+        emit GavelDesk.Rearmed(id, address(0), 0);
         vm.prank(keeper);
         desk.rearm(id);
         assertEq(hss.callCount(), 2);
         MockHss.ScheduledCall memory c = hss.callAt(1);
         assertEq(c.to, address(desk));
         assertEq(c.expirySecond, T0 + TTL + 300);
-        assertEq(c.callData, abi.encodeCall(BackstopDesk.fallbackFill, (id)));
+        assertEq(c.callData, abi.encodeCall(GavelDesk.fallbackFill, (id)));
         assertEq(desk.getOrder(id).schedule, c.schedule);
         assertEq(desk.getOrder(id).rearms, 1);
         _runSchedule(1);
-        assertEq(uint8(_status(id)), uint8(BackstopDesk.Status.FellBack));
+        assertEq(uint8(_status(id)), uint8(GavelDesk.Status.FellBack));
     }
 
     function test_rearm_tooEarlyReverts() public {
         vm.warp(T0 + TTL + 299);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.CannotRearm.selector, id));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.CannotRearm.selector, id));
         desk.rearm(id);
         vm.warp(T0 + 10);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.CannotRearm.selector, id));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.CannotRearm.selector, id));
         desk.rearm(id);
     }
 
@@ -358,16 +358,16 @@ contract BackstopFallbackTest is BackstopBase {
             desk.rearm(id);
         }
         vm.warp(T0 + TTL + 300 + 3_000);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.CannotRearm.selector, id));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.CannotRearm.selector, id));
         desk.rearm(id);
         assertEq(desk.getOrder(id).rearms, 3);
     }
 
     function test_rearm_settledOrdersCannotBeRearmed() public {
         _runSchedule(0);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.NotOpen.selector, id, BackstopDesk.Status.FellBack));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.NotOpen.selector, id, GavelDesk.Status.FellBack));
         desk.rearm(id);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.UnknownOrder.selector, 50));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.UnknownOrder.selector, 50));
         desk.rearm(50);
     }
 
@@ -384,7 +384,7 @@ contract BackstopFallbackTest is BackstopBase {
     function test_rearm_revertsWhenTheScheduleServiceRefuses() public {
         vm.warp(T0 + TTL + 300);
         hss.setForcedCodes(373, 0);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.ScheduleFailed.selector, int64(373)));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.ScheduleFailed.selector, int64(373)));
         desk.rearm(id);
         assertEq(desk.getOrder(id).rearms, 0, "a refused booking costs no attempt");
     }
@@ -393,10 +393,10 @@ contract BackstopFallbackTest is BackstopBase {
         vm.warp(T0 + TTL + 300);
         desk.rearm(id);
         feed.set(HBAR_USD, block.timestamp);
-        BackstopDesk.Quote memory q = _quote(19_500_000, 1);
+        GavelDesk.Quote memory q = _quote(19_500_000, 1);
         bytes memory sig = _sign(makerPk, id, q);
         vm.prank(taker);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.OrderExpired.selector, id));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.OrderExpired.selector, id));
         desk.fillWithQuote(id, q, sig);
     }
 
@@ -406,20 +406,20 @@ contract BackstopFallbackTest is BackstopBase {
         uint256 takerWhbar = whbar.balanceOf(taker);
         uint256 takerHbar = taker.balance;
         vm.expectEmit(true, false, false, false);
-        emit BackstopDesk.Cancelled(id);
+        emit GavelDesk.Cancelled(id);
         vm.prank(taker);
         desk.cancel(id);
         assertEq(whbar.balanceOf(taker), takerWhbar + AMOUNT_IN);
         assertEq(taker.balance, takerHbar + FUEL);
         assertEq(address(desk).balance, 0);
         assertEq(desk.escrowed(WHBAR_ADDR), 0);
-        assertEq(uint8(_status(id)), uint8(BackstopDesk.Status.Cancelled));
+        assertEq(uint8(_status(id)), uint8(GavelDesk.Status.Cancelled));
     }
 
     function test_cancel_deletesTheSchedule() public {
         address schedule = desk.getOrder(id).schedule;
         vm.expectEmit(true, false, false, true);
-        emit BackstopDesk.ScheduleDeleted(id, schedule, 22);
+        emit GavelDesk.ScheduleDeleted(id, schedule, 22);
         vm.prank(taker);
         desk.cancel(id);
         assertEq(hss.lastDeleted(), schedule);
@@ -430,10 +430,10 @@ contract BackstopFallbackTest is BackstopBase {
         address schedule = desk.getOrder(id).schedule;
         hss.setForcedCodes(0, 213);
         vm.expectEmit(true, false, false, true);
-        emit BackstopDesk.ScheduleDeleted(id, schedule, 213);
+        emit GavelDesk.ScheduleDeleted(id, schedule, 213);
         vm.prank(taker);
         desk.cancel(id);
-        assertEq(uint8(_status(id)), uint8(BackstopDesk.Status.Cancelled));
+        assertEq(uint8(_status(id)), uint8(GavelDesk.Status.Cancelled));
         // The undeleted schedule fires later and finds nothing to do.
         (, bool ok,) = _runSchedule(0);
         assertTrue(ok);
@@ -442,15 +442,15 @@ contract BackstopFallbackTest is BackstopBase {
 
     function test_cancel_onlyTheTaker() public {
         vm.prank(keeper);
-        vm.expectRevert(BackstopDesk.OnlyTaker.selector);
+        vm.expectRevert(GavelDesk.OnlyTaker.selector);
         desk.cancel(id);
-        assertEq(uint8(_status(id)), uint8(BackstopDesk.Status.Open));
+        assertEq(uint8(_status(id)), uint8(GavelDesk.Status.Open));
     }
 
     function test_cancel_notAfterExpiry() public {
         vm.warp(T0 + TTL);
         vm.prank(taker);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.OrderExpired.selector, id));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.OrderExpired.selector, id));
         desk.cancel(id);
     }
 
@@ -458,17 +458,17 @@ contract BackstopFallbackTest is BackstopBase {
         vm.prank(taker);
         desk.cancel(id);
         vm.prank(taker);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.NotOpen.selector, id, BackstopDesk.Status.Cancelled));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.NotOpen.selector, id, GavelDesk.Status.Cancelled));
         desk.cancel(id);
         uint256 second = _post();
         _fill(second, 19_500_000, 1);
         vm.prank(taker);
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.NotOpen.selector, second, BackstopDesk.Status.Filled));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.NotOpen.selector, second, GavelDesk.Status.Filled));
         desk.cancel(second);
     }
 
     function test_cancel_unknownOrder() public {
-        vm.expectRevert(abi.encodeWithSelector(BackstopDesk.UnknownOrder.selector, 9));
+        vm.expectRevert(abi.encodeWithSelector(GavelDesk.UnknownOrder.selector, 9));
         desk.cancel(9);
     }
 
@@ -480,7 +480,7 @@ contract BackstopFallbackTest is BackstopBase {
         vm.prank(newcomer);
         vm.expectRevert();
         desk.cancel(nid);
-        assertEq(uint8(_status(nid)), uint8(BackstopDesk.Status.Open));
+        assertEq(uint8(_status(nid)), uint8(GavelDesk.Status.Open));
         assertEq(desk.escrowed(WHBAR_ADDR), 2 * AMOUNT_IN);
     }
 }

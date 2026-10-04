@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Re-reads the canonical Backstop testnet run from the chain and the mirror node and prints PASS or FAIL per row.
+# Re-reads the canonical Gavel testnet run from the chain and the mirror node and prints PASS or FAIL per row.
 # Exits 1 when any row fails. Needs curl, jq and cast. Reads only public endpoints, no key, no .env.
 #
 #   bash scripts/verify-evidence.sh

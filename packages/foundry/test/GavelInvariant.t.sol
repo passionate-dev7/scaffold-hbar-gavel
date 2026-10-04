@@ -4,19 +4,19 @@ pragma solidity ^0.8.28;
 import { StdInvariant } from "forge-std/StdInvariant.sol";
 import { Test } from "forge-std/Test.sol";
 
-import { BackstopDesk } from "../contracts/BackstopDesk.sol";
+import { GavelDesk } from "../contracts/GavelDesk.sol";
 import { MockHss } from "./mocks/MockHederaSystem.sol";
-import { BackstopBase } from "./BackstopBase.sol";
+import { GavelBase } from "./GavelBase.sol";
 
-/// Drives BackstopDesk through random sequences of posts (native and token funded, to takers that can and cannot
+/// Drives GavelDesk through random sequences of posts (native and token funded, to takers that can and cannot
 /// receive tokens), maker fills, cancels, network runs of the booked fallbacks (with a router that sometimes pays too
 /// little), rearms, claims and time warps.
 ///
 /// A reverting handler call is discarded by the fuzzer, so every action first checks that it can succeed and the
 /// reach counters, asserted in `test_handlerReachesEveryAction`, prove each path executes.
-contract BackstopHandler is BackstopBase {
+contract GavelHandler is GavelBase {
     address[] internal takers;
-    mapping(uint256 id => BackstopDesk.Status) internal seen;
+    mapping(uint256 id => GavelDesk.Status) internal seen;
     uint256 public ghostFuelKept;
     uint256 public ghostFuelRefunded;
     bool public statusWentBackwards;
@@ -54,7 +54,7 @@ contract BackstopHandler is BackstopBase {
         return takers[i];
     }
 
-    function deskAddr() external view returns (BackstopDesk) {
+    function deskAddr() external view returns (GavelDesk) {
         return desk;
     }
 
@@ -89,7 +89,7 @@ contract BackstopHandler is BackstopBase {
     function fill(uint256 pick, uint256 bonus) external {
         uint256 id = _pickOpen(pick);
         if (id == 0) return;
-        BackstopDesk.Order memory o = desk.getOrder(id);
+        GavelDesk.Order memory o = desk.getOrder(id);
         // forge-lint: disable-next-line(block-timestamp)
         if (block.timestamp >= o.expiry) return;
         bonus = bound(bonus, 0, 1e6);
@@ -102,7 +102,7 @@ contract BackstopHandler is BackstopBase {
             vm.prank(maker);
             whbar.approve(address(desk), type(uint256).max);
         }
-        BackstopDesk.Quote memory q = _quote(amountOut, ++nonce);
+        GavelDesk.Quote memory q = _quote(amountOut, ++nonce);
         bytes memory sig = _sign(makerPk, id, q);
         // a taker that is not associated with tokenOut cannot be paid; skip rather than revert
         if (o.tokenOut == USDC_ADDR && !usdc.associated(o.taker)) return;
@@ -117,7 +117,7 @@ contract BackstopHandler is BackstopBase {
     function cancel(uint256 pick) external {
         uint256 id = _pickOpen(pick);
         if (id == 0) return;
-        BackstopDesk.Order memory o = desk.getOrder(id);
+        GavelDesk.Order memory o = desk.getOrder(id);
         // forge-lint: disable-next-line(block-timestamp)
         if (block.timestamp >= o.expiry) return;
         if (!(o.tokenIn == WHBAR_ADDR ? whbar.associated(o.taker) : usdc.associated(o.taker))) return;
@@ -136,17 +136,17 @@ contract BackstopHandler is BackstopBase {
         MockHss.ScheduledCall memory c = hss.callAt(index);
         if (hss.deleted(c.schedule)) return;
         uint256 id = _idOfCall(c.callData);
-        BackstopDesk.Order memory before = desk.getOrder(id);
+        GavelDesk.Order memory before = desk.getOrder(id);
         router.setHaircutBps(badMarket ? 1_000 : 0);
         (bool ran, bool ok,) = _runSchedule(index);
         router.setHaircutBps(0);
         if (!ran) return;
         if (!ok) scheduledRunReverted = true;
-        BackstopDesk.Order memory after_ = desk.getOrder(id);
-        if (before.status == BackstopDesk.Status.Open) {
+        GavelDesk.Order memory after_ = desk.getOrder(id);
+        if (before.status == GavelDesk.Status.Open) {
             ghostFuelKept += before.fuel;
             ++fallbacks;
-            if (after_.status == BackstopDesk.Status.Refunded) {
+            if (after_.status == GavelDesk.Status.Refunded) {
                 ++refunds;
                 if (after_.claimable != 0) ++unpaidRefunds;
             }
@@ -158,7 +158,7 @@ contract BackstopHandler is BackstopBase {
         uint256 count = desk.orderCount();
         if (count == 0) return;
         uint256 id = 1 + pick % count;
-        BackstopDesk.Order memory o = desk.getOrder(id);
+        GavelDesk.Order memory o = desk.getOrder(id);
         if (o.claimable == 0) return;
         // the unassociated taker associates, then claims
         vm.startPrank(o.taker);
@@ -173,7 +173,7 @@ contract BackstopHandler is BackstopBase {
     function rearm(uint256 pick) external {
         uint256 id = _pickOpen(pick);
         if (id == 0) return;
-        BackstopDesk.Order memory o = desk.getOrder(id);
+        GavelDesk.Order memory o = desk.getOrder(id);
         // forge-lint: disable-next-line(block-timestamp)
         if (block.timestamp < o.expiry + desk.RETRY_GRACE() || o.rearms >= desk.MAX_REARMS()) return;
         desk.rearm(id);
@@ -194,7 +194,7 @@ contract BackstopHandler is BackstopBase {
         if (count == 0) return 0;
         for (uint256 k; k < count; ++k) {
             uint256 id = 1 + (pick % count + k) % count;
-            if (desk.getOrder(id).status == BackstopDesk.Status.Open) return id;
+            if (desk.getOrder(id).status == GavelDesk.Status.Open) return id;
         }
         return 0;
     }
@@ -210,9 +210,9 @@ contract BackstopHandler is BackstopBase {
     function _track() internal {
         uint256 count = desk.orderCount();
         for (uint256 id = 1; id <= count; ++id) {
-            BackstopDesk.Status s = desk.getOrder(id).status;
+            GavelDesk.Status s = desk.getOrder(id).status;
             // Open (0) may move to anything; a settled order never changes state again, except Refunded -> Refunded.
-            if (seen[id] != BackstopDesk.Status.Open && seen[id] != s) statusWentBackwards = true;
+            if (seen[id] != GavelDesk.Status.Open && seen[id] != s) statusWentBackwards = true;
             seen[id] = s;
         }
     }
@@ -220,15 +220,15 @@ contract BackstopHandler is BackstopBase {
     function sumOpen(address token) external view returns (uint256 total) {
         uint256 count = desk.orderCount();
         for (uint256 id = 1; id <= count; ++id) {
-            BackstopDesk.Order memory o = desk.getOrder(id);
-            if (o.tokenIn == token && o.status == BackstopDesk.Status.Open) total += o.amountIn;
+            GavelDesk.Order memory o = desk.getOrder(id);
+            if (o.tokenIn == token && o.status == GavelDesk.Status.Open) total += o.amountIn;
         }
     }
 
     function sumClaimable(address token) external view returns (uint256 total) {
         uint256 count = desk.orderCount();
         for (uint256 id = 1; id <= count; ++id) {
-            BackstopDesk.Order memory o = desk.getOrder(id);
+            GavelDesk.Order memory o = desk.getOrder(id);
             if (o.tokenIn == token) total += o.claimable;
         }
     }
@@ -236,18 +236,18 @@ contract BackstopHandler is BackstopBase {
     function sumOpenFuel() external view returns (uint256 total) {
         uint256 count = desk.orderCount();
         for (uint256 id = 1; id <= count; ++id) {
-            BackstopDesk.Order memory o = desk.getOrder(id);
-            if (o.status == BackstopDesk.Status.Open) total += o.fuel;
+            GavelDesk.Order memory o = desk.getOrder(id);
+            if (o.status == GavelDesk.Status.Open) total += o.fuel;
         }
     }
 
     function openWithoutLiveSchedule() external view returns (uint256 bad) {
         uint256 count = desk.orderCount();
         for (uint256 id = 1; id <= count; ++id) {
-            BackstopDesk.Order memory o = desk.getOrder(id);
-            if (o.status == BackstopDesk.Status.Open && (o.schedule == address(0) || hss.deleted(o.schedule))) ++bad;
+            GavelDesk.Order memory o = desk.getOrder(id);
+            if (o.status == GavelDesk.Status.Open && (o.schedule == address(0) || hss.deleted(o.schedule))) ++bad;
             if (
-                (o.status == BackstopDesk.Status.Filled || o.status == BackstopDesk.Status.Cancelled)
+                (o.status == GavelDesk.Status.Filled || o.status == GavelDesk.Status.Cancelled)
                     && o.schedule != address(0)
             ) {
                 ++bad;
@@ -256,25 +256,25 @@ contract BackstopHandler is BackstopBase {
     }
 }
 
-contract BackstopInvariantTest is StdInvariant, Test {
-    BackstopHandler internal h;
-    BackstopDesk internal desk;
+contract GavelInvariantTest is StdInvariant, Test {
+    GavelHandler internal h;
+    GavelDesk internal desk;
     address internal constant WHBAR_ADDR = address(0x3ad2);
     address internal constant USDC_ADDR = address(0x1549);
 
     function setUp() public {
-        h = new BackstopHandler();
+        h = new GavelHandler();
         desk = h.deskAddr();
         targetContract(address(h));
         bytes4[] memory selectors = new bytes4[](8);
-        selectors[0] = BackstopHandler.post.selector;
-        selectors[1] = BackstopHandler.postToken.selector;
-        selectors[2] = BackstopHandler.fill.selector;
-        selectors[3] = BackstopHandler.cancel.selector;
-        selectors[4] = BackstopHandler.runNetwork.selector;
-        selectors[5] = BackstopHandler.claim.selector;
-        selectors[6] = BackstopHandler.rearm.selector;
-        selectors[7] = BackstopHandler.warp.selector;
+        selectors[0] = GavelHandler.post.selector;
+        selectors[1] = GavelHandler.postToken.selector;
+        selectors[2] = GavelHandler.fill.selector;
+        selectors[3] = GavelHandler.cancel.selector;
+        selectors[4] = GavelHandler.runNetwork.selector;
+        selectors[5] = GavelHandler.claim.selector;
+        selectors[6] = GavelHandler.rearm.selector;
+        selectors[7] = GavelHandler.warp.selector;
         targetSelector(FuzzSelector({ addr: address(h), selectors: selectors }));
     }
 

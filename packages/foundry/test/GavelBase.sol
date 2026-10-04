@@ -4,15 +4,15 @@ pragma solidity ^0.8.28;
 import { Test, Vm } from "forge-std/Test.sol";
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
-import { BackstopDesk } from "../contracts/BackstopDesk.sol";
+import { GavelDesk } from "../contracts/GavelDesk.sol";
 import { MockHtsToken } from "./mocks/MockHtsToken.sol";
 import { MockHss, MockHtsFees } from "./mocks/MockHederaSystem.sol";
 import { MockPool, MockRouter, MockFactory, MockWhbarHelper, MockAggregator } from "./mocks/MockSaucerSwap.sol";
 
-/// Fixture for every BackstopDesk test: the Hedera Schedule Service etched at 0x16b, WHBAR, USDC and SAUCE at fixed
+/// Fixture for every GavelDesk test: the Hedera Schedule Service etched at 0x16b, WHBAR, USDC and SAUCE at fixed
 /// addresses, a priced SaucerSwap V2 pool per pair (WHBAR/USDC 0.30%, WHBAR/SAUCE 0.30%), a router that trades at
 /// those prices, a Chainlink feed, a taker, and a maker holding a signing key and an allowance for the desk.
-abstract contract BackstopBase is Test {
+abstract contract GavelBase is Test {
     address internal constant HTS_ADDR = address(0x167);
     address internal constant HSS_ADDR = address(0x16b);
     address internal constant USDC_ADDR = address(0x1549);
@@ -58,7 +58,7 @@ abstract contract BackstopBase is Test {
     MockHss internal hss = MockHss(HSS_ADDR);
     MockHtsFees internal htsFees = MockHtsFees(HTS_ADDR);
 
-    BackstopDesk internal desk;
+    GavelDesk internal desk;
 
     function setUp() public virtual {
         vm.warp(T0);
@@ -103,8 +103,8 @@ abstract contract BackstopBase is Test {
 
     // ------------------------------------------------------------ builders
 
-    function _config() internal view returns (BackstopDesk.Config memory) {
-        return BackstopDesk.Config({
+    function _config() internal view returns (GavelDesk.Config memory) {
+        return GavelDesk.Config({
             router: address(router),
             factory: address(factory),
             whbarHelper: address(helper),
@@ -119,8 +119,8 @@ abstract contract BackstopBase is Test {
         });
     }
 
-    function _deployDesk(BackstopDesk.Config memory config) internal returns (BackstopDesk d) {
-        d = new BackstopDesk(config);
+    function _deployDesk(GavelDesk.Config memory config) internal returns (GavelDesk d) {
+        d = new GavelDesk(config);
     }
 
     /// Funds a user with HBAR and associates them with every token they can receive.
@@ -152,19 +152,19 @@ abstract contract BackstopBase is Test {
         return _post(AMOUNT_IN, MIN_OUT);
     }
 
-    function _quote(uint256 amountOut, uint256 nonce) internal view returns (BackstopDesk.Quote memory) {
-        return BackstopDesk.Quote({
+    function _quote(uint256 amountOut, uint256 nonce) internal view returns (GavelDesk.Quote memory) {
+        return GavelDesk.Quote({
             maker: maker, amountOut: amountOut, deadline: uint64(block.timestamp + 60), nonce: nonce
         });
     }
 
-    function _sign(uint256 pk, uint256 id, BackstopDesk.Quote memory q) internal view returns (bytes memory) {
+    function _sign(uint256 pk, uint256 id, GavelDesk.Quote memory q) internal view returns (bytes memory) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pk, desk.quoteDigest(id, q));
         return abi.encodePacked(r, s, v);
     }
 
     function _fill(uint256 id, uint256 amountOut, uint256 nonce) internal {
-        BackstopDesk.Quote memory q = _quote(amountOut, nonce);
+        GavelDesk.Quote memory q = _quote(amountOut, nonce);
         bytes memory sig = _sign(makerPk, id, q); // reads the desk, so it must come before the prank
         vm.prank(taker);
         desk.fillWithQuote(id, q, sig);
@@ -198,7 +198,7 @@ abstract contract BackstopBase is Test {
         }
     }
 
-    function _status(uint256 id) internal view returns (BackstopDesk.Status) {
+    function _status(uint256 id) internal view returns (GavelDesk.Status) {
         return desk.getOrder(id).status;
     }
 }

@@ -6,7 +6,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-hbar/contract";
 
 const deployedContracts = {
   296: {
-    BackstopDesk: {
+    GavelDesk: {
       address: "0xe48ec020c7d928330c788f1ac448f72c7d116960",
       abi: [
         {
@@ -15,7 +15,7 @@ const deployedContracts = {
             {
               name: "c",
               type: "tuple",
-              internalType: "struct BackstopDesk.Config",
+              internalType: "struct GavelDesk.Config",
               components: [
                 {
                   name: "router",
@@ -322,7 +322,7 @@ const deployedContracts = {
             {
               name: "quote",
               type: "tuple",
-              internalType: "struct BackstopDesk.Quote",
+              internalType: "struct GavelDesk.Quote",
               components: [
                 {
                   name: "maker",
@@ -382,7 +382,7 @@ const deployedContracts = {
             {
               name: "",
               type: "tuple",
-              internalType: "struct BackstopDesk.Order",
+              internalType: "struct GavelDesk.Order",
               components: [
                 {
                   name: "taker",
@@ -427,7 +427,7 @@ const deployedContracts = {
                 {
                   name: "status",
                   type: "uint8",
-                  internalType: "enum BackstopDesk.Status",
+                  internalType: "enum GavelDesk.Status",
                 },
                 {
                   name: "rearms",
@@ -637,7 +637,7 @@ const deployedContracts = {
             {
               name: "quote",
               type: "tuple",
-              internalType: "struct BackstopDesk.Quote",
+              internalType: "struct GavelDesk.Quote",
               components: [
                 {
                   name: "maker",
@@ -846,7 +846,7 @@ const deployedContracts = {
               name: "status",
               type: "uint8",
               indexed: false,
-              internalType: "enum BackstopDesk.Status",
+              internalType: "enum GavelDesk.Status",
             },
           ],
           anonymous: false,
@@ -1227,7 +1227,7 @@ const deployedContracts = {
             {
               name: "status",
               type: "uint8",
-              internalType: "enum BackstopDesk.Status",
+              internalType: "enum GavelDesk.Status",
             },
           ],
         },

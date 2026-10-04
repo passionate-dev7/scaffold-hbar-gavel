@@ -1,9 +1,9 @@
 {
-  "name": "backstop-maker",
+  "name": "gavel-maker",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Market-maker bot for the Backstop RFQ desk: signs EIP-712 quotes and posts them to an HCS topic.",
+  "description": "Market-maker bot for the Gavel RFQ desk: signs EIP-712 quotes and posts them to an HCS topic.",
   "engines": { "node": ">=20.12" },
   "scripts": {
     "start": "node maker.mjs",

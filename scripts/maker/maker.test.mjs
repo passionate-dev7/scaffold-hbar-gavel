@@ -16,15 +16,15 @@ import {
 } from "./lib.mjs";
 import { fetchOrderPosted, loadConfig } from "./maker.mjs";
 
-// Vector produced by BackstopDesk.quoteDigest(7, quote) (compiled from packages/foundry, deployed on an anvil
+// Vector produced by GavelDesk.quoteDigest(7, quote) (compiled from packages/foundry, deployed on an anvil
 // chain with id 296 at DESK) and by `cast wallet sign --data` for the key below.
 const DESK = "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512";
 const KEY = "0x0000000000000000000000000000000000000000000000000000000000000001";
 const MAKER = "0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf";
 const QUOTE = { orderId: 7, maker: MAKER, amountOut: 1_850_000, deadline: 1_790_000_000, nonce: 7 };
-const CONTRACT_DIGEST = "0xee59ff1bff2c196906c6bc7ce744308259066f8ac19c3f4f3c7f16cb0c303acf";
+const CONTRACT_DIGEST = "0xd4ff0d614eaed2a7e32579c0321e3d079b68d38d8921fa5ee5e78156ee5720e3";
 const CAST_SIGNATURE =
-  "0xae2d71234717156e0bcb3bf7995f0310a25913a73b559176112ed592d9a28ae55013c27fef178cfceca2c4d5528745f019d1bfb8b745621484c216eda37384f71b";
+  "0x7de7008d8d15d6322a11bcc8b9b038f361ae280861b3d9f4312675d2941a7d207ebf02e613796b57781ed909aa72799c8c0bce40f0b0726fdef8f9e045a90b881b";
 
 const Q96 = 1n << 96n;
 const NOW = 1_790_000_000;

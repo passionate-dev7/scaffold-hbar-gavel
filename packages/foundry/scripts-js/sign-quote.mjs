@@ -1,4 +1,4 @@
-// Signs a Backstop EIP-712 quote with MAKER_PRIVATE_KEY from packages/foundry/.env and prints the quote JSON.
+// Signs a Gavel EIP-712 quote with MAKER_PRIVATE_KEY from packages/foundry/.env and prints the quote JSON.
 // The key is read here and never printed. The output is the HCS wire format the maker bot also posts.
 //   node scripts-js/sign-quote.mjs <desk> <orderId> <amountOut> <deadlineUnix> <nonce> [chainId]
 import { config } from "dotenv";
@@ -34,7 +34,7 @@ const message = {
   nonce: BigInt(nonce),
 };
 const signature = await account.signTypedData({
-  domain: { name: "Backstop", version: "1", chainId: Number(chainId), verifyingContract: desk },
+  domain: { name: "Gavel", version: "1", chainId: Number(chainId), verifyingContract: desk },
   types,
   primaryType: "Quote",
   message,

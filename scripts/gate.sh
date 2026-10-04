@@ -3,7 +3,7 @@
 # scaffold, install, contract tests, lint, build, boot, load every core route, no committed secrets.
 #
 #   bash scripts/gate.sh                                   # the committed HEAD of this checkout
-#   GATE_TEMPLATE=passionate-dev7/scaffold-hbar-gavel bash scripts/gate.sh   # the published repo
+#   GATE_TEMPLATE=passionate-dev7/scaffold-hbar-backstop bash scripts/gate.sh   # the published repo
 #   PM=npm bash scripts/gate.sh                            # npm instead of yarn
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -19,7 +19,7 @@ else
   mkdir "$WORK/template"
   git -C "$ROOT" archive HEAD | tar -x -C "$WORK/template"
   export CREATE_SCAFFOLD_HBAR_TEMPLATE_DIR="$WORK/template"
-  TEMPLATE=passionate-dev7/scaffold-hbar-gavel
+  TEMPLATE=passionate-dev7/scaffold-hbar-backstop
 fi
 echo "Gate: $TEMPLATE with $PM in $WORK"
 
@@ -38,7 +38,7 @@ cd "$WORK"
 npx -y create-scaffold-hbar@latest app --template "$TEMPLATE" \
   -f nextjs-app -s foundry --network testnet --package-manager "$PM" --skip-hedera-skills --ci
 cd app
-for f in README.md AGENTS.md LICENCE packages/foundry/contracts/BasketVault.sol packages/nextjs/app/page.tsx; do
+for f in README.md AGENTS.md LICENCE packages/foundry/contracts/BackstopDesk.sol packages/nextjs/app/page.tsx; do
   test -f "$f" || { echo "FAIL: missing $f"; exit 1; }
 done
 

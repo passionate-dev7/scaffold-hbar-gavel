@@ -1,6 +1,6 @@
 {
-  "name": "index-basket",
-  "description": "Tokenised index fund on Hedera: one HBAR deposit buys a weighted basket on SaucerSwap V2, mints an HTS share token, redeems in kind, and rebalances itself through the Hedera Schedule Service with Chainlink USD pricing.",
+  "name": "backstop",
+  "description": "An RFQ desk on Hedera: takers escrow swap orders, market makers answer with EIP-712 quotes on a Hedera Consensus Service topic, the best quote settles through HTS allowances inside a Chainlink band, and an order nobody fills is swapped on SaucerSwap V2 by its own Schedule Service call.",
   "version": "1.0.0",
   "create-scaffold-hbar": {
     "capabilities": {
@@ -21,7 +21,7 @@
         {
           "steps": [
             {
-              "text": "BasketVault buys WHBAR, SAUCE and USDC on SaucerSwap V2, mints an HTS share token, and books its own rebalances with the Hedera Schedule Service. Contracts run against Hedera testnet; there is no local chain step."
+              "text": "BackstopDesk escrows swap orders, settles the best maker quote from a Hedera Consensus Service topic, and books a SaucerSwap V2 fallback for every order with the Hedera Schedule Service. Contracts run against Hedera testnet; there is no local chain step."
             }
           ]
         },

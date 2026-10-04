@@ -60,6 +60,23 @@ Use the package manager the project was created with: swap `yarn x` for `npm run
 12. **Escrow is measured, never assumed.** `postOrder` refuses a tokenIn or tokenOut whose HTS custom fee schedule (`getTokenCustomFees`) is not empty, requires the balance delta of the intake to equal `amountIn`, and every payout of tokenIn re-checks that the desk still holds what it owes (`Insolvent`). WHBAR (0.0.15058), USDC (0.0.5449) and SAUCE (0.0.1183558) have empty schedules and no fee schedule key, so their fees cannot change.
 13. **The constructor rejects what it cannot trust:** zero addresses, `scheduledGas` under 3,000,000, zero fuel, a band of 0 or 10,000 bps or more, zero oracle age, a feed that is not 8 decimals, stablecoin decimals above 18. `usdDecimals` is passed in because an HTS token cannot be called from a forge script simulation.
 
+## Environment variables
+
+Secrets live in `packages/foundry/.env` (gitignored). Never print, log or paste a key.
+
+| Variable | Where | Meaning |
+| --- | --- | --- |
+| `DEPLOYER_PRIVATE_KEY` | foundry scripts | ECDSA key of the deploying and taking account. Required by `yarn foundry:live` |
+| `MAKER_PRIVATE_KEY` | live script, `sign-quote.mjs`, maker bot | Key that signs quotes and pays USDC. The live script generates one and appends it when unset |
+| `MAKER_ACCOUNT_ID` | hcs.mjs, maker bot | Hedera account id of the maker, written by the live script |
+| `DESK_ADDRESS` | maker bot, live script | The desk to serve. Set `DESK=0x...` to rerun the live flows against an existing desk |
+| `QUOTE_TOPIC_ID` | maker bot, live script | The HCS topic of the quote board, created by the live script when empty |
+| `HEDERA_RPC_URL` | foundry and maker | JSON-RPC endpoint, `https://testnet.hashio.io/api` by default |
+| `MIRROR_URL` | maker bot, hcs.mjs | Mirror node base URL |
+| `FUEL_PER_ORDER`, `MAX_DEVIATION_BPS`, `MAX_ORACLE_AGE`, `SCHEDULED_GAS` | `Deploy.s.sol` | Constructor overrides in tinybar, bps and seconds |
+| `NEXT_PUBLIC_QUOTE_TOPIC_ID` | app | Overrides the topic the board reads (default in `utils/desk/constants.ts`) |
+| `NEXT_PUBLIC_HEDERA_TESTNET_RPC_URL`, `NEXT_PUBLIC_HEDERA_MAINNET_RPC_URL`, `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID` | app (`packages/nextjs/.env`) | Scaffold-HBAR wallet and RPC settings |
+
 ## Hedera behaviour the code depends on
 
 | Behaviour | Where it matters |

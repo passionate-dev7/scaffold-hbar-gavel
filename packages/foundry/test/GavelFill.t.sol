@@ -10,11 +10,7 @@ import { GavelBase } from "./GavelBase.sol";
 
 /// A contract taker that refuses native HBAR, to prove a failed fuel refund cannot block a fill.
 contract HbarRefuser {
-    function post(GavelDesk desk, uint256 amountIn, uint256 minOut, uint256 fuel)
-        external
-        payable
-        returns (uint256)
-    {
+    function post(GavelDesk desk, uint256 amountIn, uint256 minOut, uint256 fuel) external payable returns (uint256) {
         return desk.postOrder{ value: amountIn + fuel }(address(0x3ad2), address(0x1549), 3000, amountIn, minOut, 120);
     }
 }

@@ -153,9 +153,10 @@ abstract contract GavelBase is Test {
     }
 
     function _quote(uint256 amountOut, uint256 nonce) internal view returns (GavelDesk.Quote memory) {
-        return GavelDesk.Quote({
-            maker: maker, amountOut: amountOut, deadline: uint64(block.timestamp + 60), nonce: nonce
-        });
+        return
+            GavelDesk.Quote({
+                maker: maker, amountOut: amountOut, deadline: uint64(block.timestamp + 60), nonce: nonce
+            });
     }
 
     function _sign(uint256 pk, uint256 id, GavelDesk.Quote memory q) internal view returns (bytes memory) {

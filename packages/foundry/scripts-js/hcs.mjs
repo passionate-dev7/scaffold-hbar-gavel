@@ -1,7 +1,7 @@
 // Hedera Consensus Service helper for the Gavel quote board. Keys are read from packages/foundry/.env inside the
 // process and never printed.
 //
-//   node scripts-js/hcs.mjs create-topic [memo]              operator: deployer (DEPLOYER_PRIVATE_KEY, 0.0.10855086)
+//   node scripts-js/hcs.mjs create-topic [memo]              operator: deployer (DEPLOYER_PRIVATE_KEY)
 //   node scripts-js/hcs.mjs submit <topicId> <json> [--as maker]   operator: deployer, or the maker with --as maker
 //
 // Prints one JSON line: { topicId } or { topicId, sequence, txId }.

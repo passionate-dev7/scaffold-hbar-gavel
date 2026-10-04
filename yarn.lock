@@ -2518,6 +2518,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sh/foundry@workspace:packages/foundry"
   dependencies:
+    "@hiero-ledger/sdk": ^2.80.0
     dotenv: ~16.3.1
     envfile: ~6.18.0
     ethers: ~5.7.1
@@ -2525,6 +2526,7 @@ __metadata:
     qrcode: ~1.5.3
     shx: ^0.3.4
     toml: ~3.0.0
+    viem: 2.39.0
   languageName: unknown
   linkType: soft
 

@@ -1,0 +1,18 @@
+{
+  "name": "backstop-maker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Market-maker bot for the Backstop RFQ desk: signs EIP-712 quotes and posts them to an HCS topic.",
+  "engines": { "node": ">=20.12" },
+  "scripts": {
+    "start": "node maker.mjs",
+    "once": "node maker.mjs --once",
+    "dry-run": "node maker.mjs --once --dry-run",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@hiero-ledger/sdk": "^2.80.0",
+    "viem": "^2.21.0"
+  }
+}

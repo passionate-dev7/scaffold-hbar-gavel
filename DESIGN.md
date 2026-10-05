@@ -518,14 +518,6 @@ There are no raster images in the system aside from the favicon and OG share ima
 6. Keep `{colors.surface-dark}` scarce, at most one full-bleed dark mockup per page. The dark surface is a narrative device, not a chrome treatment.
 7. When introducing a new component, ask whether it can be expressed with the existing ASCII-bracket + 4px-radius + Berkeley-Mono vocabulary before adding new tokens. The system's strength is that it almost never needs new ones.
 
-## Known Gaps
-
-- **Mobile screenshots not captured**, responsive behavior synthesizes OpenCode's mobile pattern (hamburger drawer, single-column, footer accordion) from desktop evidence and the breakpoint stack.
-- **Hover states not documented** by system policy.
-- **In-product TUI screenshots** beyond the marketing hero mockup are not in the captured set; the actual `opencode` terminal interface (full keybindings, panels, status bar) is not documented here.
-- **`/go` page** not extracted, the marketing page for the Go SDK likely shares the same chrome but introduces code-sample blocks not documented above.
-- **Form validation state styling** (success / error inline messages) not present in the captured surfaces.
-
 ## Gavel desk
 
 Gavel is an RFQ trading desk on Hedera. This file is the OpenCode system applied to it: one monospaced face, a cream canvas, hairline-ruled text blocks, 4px interactive radius, and a single dark surface. On Gavel that dark surface is the quote board, because the board is the product: signed quotes arrive on a public topic with consensus timestamps, the best one is marked, and a gavel falls at expiry when the scheduled fallback swap runs.

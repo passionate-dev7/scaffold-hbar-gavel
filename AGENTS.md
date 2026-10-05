@@ -88,7 +88,7 @@ Secrets live in `packages/foundry/.env` (gitignored). Never print, log or paste 
 | Expiry more than 62 days out is refused | `MAX_TTL = 60 days` |
 | A busy second refuses new schedules (`SCHEDULE_EXPIRY_IS_BUSY`) | `_secondWithCapacity` probes +1, +2, +4 ... +64 s; if every probe is full `postOrder` reverts and the taker retries |
 | Scheduled calls read a clock about two seconds early | No time check in `fallbackFill`; the schedule books `expiry` itself |
-| An account must be associated with an HTS token to receive it | The desk self-associates tokenIn through HIP-719 (`associateTokens`, or lazily in `postOrder`); contracts get no automatic associations. EOAs auto-created by a transfer have unlimited ones, so a maker needs no association step |
+| An account must be associated with an HTS token to receive it | The desk self-associates tokenIn through HIP-719 (`associateTokens`, or lazily in `postOrder`) and does not rely on automatic association slots. EOAs auto-created by a transfer have unlimited ones, so a maker needs no association step |
 | An HTS token can carry fixed, fractional or royalty custom fees that change what a transfer moves | `postOrder` reads `getTokenCustomFees` (precompile 0x167) for both tokens and refuses any fee; the live testnet tokens return empty schedules and have no fee schedule key |
 | A refund to a taker not associated with tokenIn cannot be paid | `fallbackFill` parks it as `claimable`; `claim(id)` pays once the taker associates |
 | An HTS approval from a contract costs about 700k gas and HTS refuses one above max supply | `swapEscrow` approves the router for `totalSupply()` once per token |

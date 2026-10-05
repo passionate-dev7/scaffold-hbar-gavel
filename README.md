@@ -42,7 +42,7 @@ yarn foundry:test                    # 125 tests, no network needed
 
 1. Fund an ECDSA testnet account at the [Hedera faucet](https://portal.hedera.com/faucet) and put its key in `packages/foundry/.env` as `DEPLOYER_PRIVATE_KEY`.
 2. `yarn foundry:live` deploys the desk, creates the quote topic, funds a maker, and runs the three paths with HashScan links.
-3. `yarn next:dev` opens the desk at http://localhost:3000. Post an order, then run the maker (`cd scripts/maker && npm install && cd ../.. && node scripts/maker/maker.mjs --once`) and accept its quote on the board.
+3. `yarn next:dev` serves the desk on port 3000. Post an order, then run the maker (`cd scripts/maker && npm install && cd ../.. && node scripts/maker/maker.mjs --once`) and accept its quote on the board.
 4. `bash scripts/verify-evidence.sh` re-reads the run from chain.
 
 Use `npm run` in place of `yarn` for an npm project.
@@ -57,4 +57,4 @@ Use `npm run` in place of `yarn` for an npm project.
 
 ## License
 
-MIT, see [LICENCE](LICENCE). Built on Scaffold-HBAR.
+MIT, see [LICENCE](LICENCE).

@@ -29,3 +29,7 @@ dist
 
 # local proxy capture
 mitm_mcp_traffic.db
+
+# demo build intermediates
+docs/demo/build/
+docs/demo/footage/

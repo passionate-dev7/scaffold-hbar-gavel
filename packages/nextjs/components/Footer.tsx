@@ -1,10 +1,11 @@
 import React from "react";
 import { HederaPortalFaucet } from "@scaffold-hbar-ui/components";
 import { hedera } from "viem/chains";
-import { SwitchTheme } from "~~/components/SwitchTheme";
 import { useTargetNetwork } from "~~/hooks/scaffold-hbar/useTargetNetwork";
 import { DESK_ADDRESS } from "~~/utils/desk/constants";
 import { hashscan } from "~~/utils/desk/hedera";
+
+const WORDMARK = ["█▀▀ ▄▀▄ █ █ █▀▀ █  ", "█ █ █▀█ ▀▄▀ █▀▀ █  ", "▀▀▀ ▀ ▀  ▀  ▀▀▀ ▀▀▀"].join("\n");
 
 /**
  * Site footer
@@ -14,50 +15,39 @@ export const Footer = () => {
   const isTestnet = targetNetwork.id !== hedera.id;
 
   return (
-    <div className="min-h-0 py-5 px-1 mb-11 lg:mb-0">
-      <div>
-        <div className="fixed flex justify-between items-center w-full z-10 p-4 bottom-0 left-0 pointer-events-none">
-          <div className="flex flex-col md:flex-row gap-2 pointer-events-auto">
-            {isTestnet && <HederaPortalFaucet showIcon />}
-          </div>
-          <SwitchTheme className="pointer-events-auto" />
-        </div>
-      </div>
-      <div className="w-full">
-        <ul className="menu menu-horizontal w-full">
-          <div className="flex justify-center items-center gap-3 text-sm w-full text-base-content/70">
+    <footer className="mt-24 border-t border-hair">
+      <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-6 px-4 py-8 text-sm text-sub sm:px-6 md:flex-row md:items-end md:justify-between">
+        <pre aria-hidden="true" className="m-0 select-none text-[0.8125rem] leading-[1.15] text-ink">
+          {WORDMARK}
+        </pre>
+        <ul className="m-0 flex list-none flex-wrap items-center gap-x-6 gap-y-1 p-0">
+          <li>
             <a
               href={hashscan.contract(DESK_ADDRESS)}
               target="_blank"
               rel="noreferrer"
-              className="link -my-2 py-2 hover:text-primary"
+              className="link -my-2 inline-block py-2"
             >
               Desk on HashScan
             </a>
-            <span className="opacity-30">|</span>
-            <span>
-              Built on{" "}
-              <a
-                href="https://hedera.com/"
-                target="_blank"
-                rel="noreferrer"
-                className="font-semibold link -my-2 py-2 hover:text-primary"
-              >
-                Hedera
-              </a>
-            </span>
-            <span className="opacity-30">|</span>
+          </li>
+          <li>
             <a
               href="https://docs.hedera.com/"
               target="_blank"
               rel="noreferrer"
-              className="link -my-2 py-2 hover:text-primary"
+              className="link -my-2 inline-block py-2"
             >
-              Docs
+              Hedera docs
             </a>
-          </div>
+          </li>
+          {isTestnet && (
+            <li>
+              <HederaPortalFaucet showIcon />
+            </li>
+          )}
         </ul>
       </div>
-    </div>
+    </footer>
   );
 };

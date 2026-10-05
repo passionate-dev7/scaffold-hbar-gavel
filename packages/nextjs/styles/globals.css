@@ -2,113 +2,129 @@
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
+/*
+  Tokens come from DESIGN.md (the OpenCode system applied to the Gavel desk).
+  Static palette first, then context tones: the same utility (text-ok, text-bad, ...) reads
+  deep ink on the cream canvas and the bright value on the dark quote board.
+*/
 @theme {
-  --shadow-center: 0 0 12px -2px rgb(0 0 0 / 0.05);
+  --color-canvas: #fdfcfc;
+  --color-soft: #f8f7f7;
+  --color-card: #f1eeee;
+  --color-ink: #201d1d;
+  --color-ink-deep: #0f0000;
+  --color-dark: #201d1d;
+  --color-dark-2: #302c2c;
+  --color-ash: #9a9898;
+  --color-on-dark: #fdfcfc;
+  --color-rule: #646262;
+  --color-accent: #007aff;
+  --color-accent-ink: #0056b3;
+  --shadow-center: 0 0 0 1px rgb(15 0 0 / 0.12);
   --animate-pulse-fast: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --color-hedera-ultraviolet: #8259ef;
-  --color-hedera-azure: #0031ff;
-  --color-hedera-charcoal: #11151d;
-  --color-hedera-indigo: #00156e;
-  --color-hedera-cobalt: #2d84eb;
-  --color-hedera-violet: #4f46e5;
-  --color-hedera-smoke: #9b9b9d;
 }
 
-/* next/font defines --font-plex-* on <body>; inline keeps the reference there instead of at :root. */
 @theme inline {
-  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --color-fg: var(--tone-fg);
+  --color-sub: var(--tone-sub);
+  --color-mute: var(--tone-mute);
+  --color-hair: var(--tone-hair);
+  --color-ok: var(--tone-ok);
+  --color-bad: var(--tone-bad);
+  --color-warn: var(--tone-warn);
+  --color-link: var(--tone-link);
+}
+
+/* next/font defines --font-jb on <body>; inline keeps the reference there instead of at :root. */
+@theme inline {
+  --font-sans: var(--font-jb), "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-mono: var(--font-jb), "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 @plugin "daisyui" {
-  themes:
-    light,
-    dark --prefersdark;
+  themes: false;
 }
 
 @plugin "daisyui/theme" {
-  name: "light";
+  name: "gavel";
   default: true;
   color-scheme: light;
 
-  --color-base-100: #fbfaf6;
-  --color-base-200: #f2f0e9;
-  --color-base-300: #dedbcf;
-  --color-base-content: #1a1b1f;
-  --color-primary: #3340c8;
-  --color-primary-content: #ffffff;
-  --color-secondary: #e4e7fa;
-  --color-secondary-content: #1a1b1f;
-  --color-accent: #3340c8;
+  --color-base-100: #fdfcfc;
+  --color-base-200: #f8f7f7;
+  --color-base-300: #e0dddd;
+  --color-base-content: #201d1d;
+  --color-primary: #201d1d;
+  --color-primary-content: #fdfcfc;
+  --color-secondary: #f1eeee;
+  --color-secondary-content: #201d1d;
+  --color-accent: #0056b3;
   --color-accent-content: #ffffff;
-  --color-neutral: #1a1b1f;
-  --color-neutral-content: #f2f0e9;
-  --color-info: #3340c8;
-  --color-success: #1d7a52;
-  --color-warning: #a8670e;
-  --color-error: #b93636;
+  --color-neutral: #201d1d;
+  --color-neutral-content: #fdfcfc;
+  --color-info: #0056b3;
+  --color-success: #12692b;
+  --color-warning: #8a4b00;
+  --color-error: #c4251c;
 
-  --radius-selector: 0.375rem;
-  --radius-field: 0.5rem;
-  --radius-box: 0.75rem;
+  --radius-selector: 0.25rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0;
   --depth: 0;
   --noise: 0;
-  --tt-tailw: 6px;
-}
-
-@plugin "daisyui/theme" {
-  name: "dark";
-  prefersdark: true;
-  color-scheme: dark;
-
-  --color-base-100: #17181d;
-  --color-base-200: #101115;
-  --color-base-300: #2a2b33;
-  --color-base-content: #ecebe6;
-  --color-primary: #8b97ff;
-  --color-primary-content: #0d0f2b;
-  --color-secondary: #23263d;
-  --color-secondary-content: #ecebe6;
-  --color-accent: #8b97ff;
-  --color-accent-content: #0d0f2b;
-  --color-neutral: #ecebe6;
-  --color-neutral-content: #101115;
-  --color-info: #8b97ff;
-  --color-success: #4cc38a;
-  --color-warning: #e0a23a;
-  --color-error: #f0736b;
-
-  --radius-selector: 0.375rem;
-  --radius-field: 0.5rem;
-  --radius-box: 0.75rem;
-  --depth: 0;
-  --noise: 0;
-
-  --tt-tailw: 6px;
+  --tt-tailw: 4px;
   --tt-bg: var(--color-primary);
 }
 
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-*/
+:root,
+[data-theme] {
+  --tone-fg: #201d1d;
+  --tone-sub: #424245;
+  --tone-mute: #646262;
+  --tone-hair: rgb(15 0 0 / 0.12);
+  --tone-ok: #12692b;
+  --tone-bad: #c4251c;
+  --tone-warn: #8a4b00;
+  --tone-link: #0056b3;
+  background: var(--color-canvas);
+}
+
+/* The one dark surface: the quote board. */
+.tui {
+  --tone-fg: #fdfcfc;
+  --tone-sub: #d2cfcf;
+  --tone-mute: #9a9898;
+  --tone-hair: rgb(253 252 252 / 0.16);
+  --tone-ok: #30d158;
+  --tone-bad: #ff6b61;
+  --tone-warn: #ff9f0a;
+  --tone-link: #4da3ff;
+  background: var(--color-dark);
+  color: var(--color-on-dark);
+}
+
 @layer base {
   *,
   ::after,
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-base-300, currentColor);
-  }
-
-  p {
-    margin: 1rem 0;
+    border-color: var(--tone-hair);
   }
 
   body {
     min-height: 100vh;
-    font-family: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-jb), "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    letter-spacing: 0;
+    color: var(--color-ink);
+    background: var(--color-canvas);
+    overflow-wrap: anywhere;
+  }
+
+  p {
+    margin: 1rem 0;
   }
 
   h1,
@@ -116,32 +132,254 @@
   h3,
   h4 {
     margin-bottom: 0.5rem;
-    line-height: 1.15;
+    line-height: 1.4;
   }
 
+  a {
+    text-underline-offset: 3px;
+  }
 }
 
-:root,
-[data-theme] {
-  background: var(--color-base-200);
+@layer components {
+  .link {
+    color: var(--tone-link);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+  }
+  .link:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  /* Section label: a bare bold line over a hairline, bracket marker in front. */
+  .sec-h {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    margin: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--tone-hair);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+  .sec-h > :first-child {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .sec-h > :first-child::before {
+    content: "[+] ";
+    font-weight: 400;
+    color: var(--tone-mute);
+  }
+  .sec-note {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--tone-mute);
+  }
+
+  /* Buttons: 36px, 4px radius, flat. The tui context flips ink for cream. */
+  .act {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.25rem;
+    padding: 0.125rem 1.25rem;
+    border: 1px solid var(--act-bd, var(--color-ink));
+    border-radius: 4px;
+    background: var(--act-bg, var(--color-ink));
+    color: var(--act-fg, var(--color-canvas));
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.5;
+    cursor: pointer;
+    transition:
+      background-color 120ms,
+      color 120ms,
+      border-color 120ms;
+  }
+  .act:hover:not(:disabled) {
+    background: var(--act-bg-hover, var(--color-ink-deep));
+  }
+  .act:disabled {
+    background: var(--color-card);
+    border-color: var(--color-card);
+    color: #646262;
+    cursor: not-allowed;
+  }
+  .act-sm {
+    min-height: 2rem;
+    padding: 0 0.875rem;
+    font-size: 0.8125rem;
+  }
+  .act-block {
+    width: 100%;
+  }
+  .act-line {
+    --act-bg: var(--color-canvas);
+    --act-bg-hover: var(--color-card);
+    --act-fg: var(--color-ink);
+    --act-bd: var(--color-rule);
+  }
+  .act-danger {
+    --act-bg: var(--color-canvas);
+    --act-bg-hover: var(--color-card);
+    --act-fg: #c4251c;
+    --act-bd: #c4251c;
+  }
+  .tui .act {
+    --act-bg: var(--color-on-dark);
+    --act-bg-hover: #ffffff;
+    --act-fg: var(--color-dark);
+    --act-bd: var(--color-on-dark);
+  }
+  .tui .act-line {
+    --act-bg: transparent;
+    --act-bg-hover: var(--color-dark-2);
+    --act-fg: var(--color-on-dark);
+    --act-bd: var(--color-ash);
+  }
+  .tui .act-danger {
+    --act-bg: transparent;
+    --act-bg-hover: var(--color-dark-2);
+    --act-fg: #ff6b61;
+    --act-bd: #ff6b61;
+  }
+  .tui .act:disabled {
+    background: var(--color-dark-2);
+    border-color: var(--color-dark-2);
+    color: #9a9898;
+  }
+
+  /* Choice buttons read as bracket checkboxes: [x] picked, [ ] not. */
+  .pick {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5ch;
+    min-height: 2.25rem;
+    padding: 0 0.75rem;
+    border: 1px solid var(--color-rule);
+    border-radius: 4px;
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font: inherit;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition:
+      background-color 120ms,
+      color 120ms;
+  }
+  .pick::before {
+    content: "[ ]";
+    color: var(--color-rule);
+  }
+  .pick[aria-pressed="true"] {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-canvas);
+    font-weight: 700;
+  }
+  .pick[aria-pressed="true"]::before {
+    content: "[x]";
+    color: var(--color-canvas);
+  }
+  .pick:disabled {
+    background: var(--color-card);
+    border-color: var(--color-card);
+    color: #646262;
+    cursor: not-allowed;
+  }
+  .pick:disabled::before {
+    color: #646262;
+  }
+  .pick:hover:not(:disabled):not([aria-pressed="true"]) {
+    background: var(--color-card);
+  }
+
+  .field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 2.5rem;
+    padding: 0 0.75rem;
+    border: 1px solid var(--color-rule);
+    border-radius: 4px;
+    background: var(--color-soft);
+    color: var(--color-ink);
+  }
+  .field:focus-within {
+    background: var(--color-canvas);
+    border-color: var(--color-ink);
+  }
+  .field input {
+    min-width: 0;
+    flex: 1;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 1rem;
+  }
+  .field[aria-invalid="true"] {
+    border-color: #c4251c;
+  }
+
+  /* Rows of the tape arrive like lines printed to a terminal. */
+  .print-in {
+    animation: print-in 180ms steps(4, end) both;
+  }
+  .caret::after {
+    content: "_";
+    margin-left: 0.15ch;
+    animation: caret 1.1s steps(1, end) infinite;
+  }
+
+  /* Cell labels exist only where the column header row is hidden. */
+  .cell[data-l]::before {
+    content: attr(data-l) " ";
+    color: var(--tone-mute);
+  }
+  @media (min-width: 64rem) {
+    .cell[data-l]::before {
+      content: none;
+    }
+  }
 }
 
-.link {
-  text-underline-offset: 2px;
+@keyframes print-in {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-/* daisyUI dims a disabled button to 20% ink, which reads as missing. 55% keeps the label legible and still reads as off. */
-.btn:is(:disabled, [disabled]) {
-  color: color-mix(in oklab, var(--color-base-content) 55%, transparent);
+@keyframes caret {
+  50% {
+    opacity: 0;
+  }
 }
 
 :where(a, button, summary, input, [role="tab"]):focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--tone-link);
   outline-offset: 2px;
 }
 
-.hedera-gradient {
-  background: linear-gradient(135deg, #8259ef 0%, #0031ff 100%);
+/* Wallet modals share the one face. */
+[data-rk] {
+  font-family: var(--font-jb), "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,4 +1,4 @@
-import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import "@rainbow-me/rainbowkit/styles.css";
 import "@scaffold-hbar-ui/components/styles.css";
 import { ScaffoldHbarAppWithProviders } from "~~/components/ScaffoldHbarAppWithProviders";
@@ -7,8 +7,7 @@ import "~~/styles/globals.css";
 import { PRODUCT_NAME } from "~~/utils/desk/constants";
 import { getMetadata } from "~~/utils/scaffold-hbar/getMetadata";
 
-const plexSans = IBM_Plex_Sans({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-plex-sans" });
-const plexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-plex-mono" });
+const jetbrains = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-jb" });
 
 export const metadata = getMetadata({
   title: PRODUCT_NAME,
@@ -19,8 +18,8 @@ export const metadata = getMetadata({
 const ScaffoldHbarApp = ({ children }: { children: React.ReactNode }) => {
   return (
     <html suppressHydrationWarning>
-      <body className={`${plexSans.variable} ${plexMono.variable}`}>
-        <ThemeProvider enableSystem>
+      <body className={jetbrains.variable}>
+        <ThemeProvider forcedTheme="gavel" enableSystem={false}>
           <ScaffoldHbarAppWithProviders>{children}</ScaffoldHbarAppWithProviders>
         </ThemeProvider>
       </body>

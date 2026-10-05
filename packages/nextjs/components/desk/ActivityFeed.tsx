@@ -69,19 +69,15 @@ export function ActivityFeed({ onSelect }: { onSelect: (id: bigint) => void }) {
   const rows = expanded ? events.data : events.data?.slice(0, COLLAPSED_ROWS);
 
   return (
-    <section className="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6" aria-labelledby="activity-title">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h2 id="activity-title" className="m-0 text-xl font-semibold">
-          Desk activity
-        </h2>
-        <span className="text-xs text-base-content/70">Decoded from the desk contract logs, refreshed every 15s</span>
+    <section aria-labelledby="activity-title">
+      <div className="sec-h">
+        <h2 id="activity-title">Desk activity</h2>
+        <span className="sec-note">Decoded from the desk contract logs, refreshed every 15s</span>
       </div>
 
-      {events.isLoading && (
-        <p className="m-0 mt-4 text-sm text-base-content/70">Reading the desk logs from the mirror node</p>
-      )}
+      {events.isLoading && <p className="m-0 mt-4 text-sm text-mute">Reading the desk logs from the mirror node</p>}
       {events.isError && (
-        <p className="m-0 mt-4 text-sm text-error" role="alert">
+        <p className="m-0 mt-4 text-sm text-bad" role="alert">
           Could not read the desk logs.{" "}
           <button type="button" className="link" onClick={() => void events.refetch()}>
             Retry
@@ -89,24 +85,24 @@ export function ActivityFeed({ onSelect }: { onSelect: (id: bigint) => void }) {
         </p>
       )}
       {events.data && events.data.length === 0 && (
-        <p className="m-0 mt-4 text-sm text-base-content/70">The desk has not logged an event yet.</p>
+        <p className="m-0 mt-4 text-sm text-mute">The desk has not logged an event yet.</p>
       )}
 
       {rows && rows.length > 0 && (
-        <ul className="m-0 mt-3 list-none divide-y divide-base-300 p-0">
+        <ul className="m-0 list-none divide-y divide-hair p-0">
           {rows.map(ev => (
-            <li key={ev.id} className="grid gap-x-4 gap-y-1 py-3 sm:grid-cols-[7rem_5.5rem_1fr_auto] sm:items-baseline">
+            <li key={ev.id} className="grid gap-x-4 gap-y-1 py-3 sm:grid-cols-[7rem_9rem_1fr_auto] sm:items-baseline">
               <time
-                className="font-mono text-xs tabular-nums text-base-content/70"
+                className="text-xs tabular-nums text-mute"
                 dateTime={new Date(ev.at * 1000).toISOString()}
                 title={fmtDateTime(ev.at)}
               >
                 {now === null ? "" : fmtAgo(Math.max(0, now - ev.at))}
               </time>
-              <span className="flex items-baseline gap-2 text-xs font-medium">
+              <span className="flex items-baseline gap-2 text-xs font-bold">
                 <button
                   type="button"
-                  className="link cursor-pointer border-0 bg-transparent p-0 font-mono text-xs"
+                  className="link text-xs"
                   onClick={() => onSelect(ev.args.id as bigint)}
                   aria-label={`Show order ${ev.args.id}`}
                 >
@@ -128,7 +124,7 @@ export function ActivityFeed({ onSelect }: { onSelect: (id: bigint) => void }) {
         </ul>
       )}
       {events.data && events.data.length > COLLAPSED_ROWS && (
-        <button type="button" className="btn btn-ghost btn-sm mt-2" onClick={() => setExpanded(e => !e)}>
+        <button type="button" className="act act-sm act-line mt-3" onClick={() => setExpanded(e => !e)}>
           {expanded ? "Show fewer" : `Show all ${events.data.length}`}
         </button>
       )}

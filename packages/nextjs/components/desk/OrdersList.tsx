@@ -10,7 +10,7 @@ import { fmtDateTime, fmtEscrow, fmtToken } from "~~/utils/desk/format";
 
 export type OrderRow = { id: bigint; order: Order | undefined };
 
-const STATUS_TONE = ["text-primary", "text-success", "text-success", "text-base-content/70", "text-warning"];
+const STATUS_TONE = ["text-link", "text-ok", "text-ok", "text-mute", "text-warn"];
 
 export function OrdersList({
   rows,
@@ -32,17 +32,15 @@ export function OrdersList({
   );
 
   return (
-    <section className="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6" aria-labelledby="orders-title">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="orders-title" className="m-0 text-xl font-semibold">
-          Orders
-        </h2>
-        <div className="join" role="group" aria-label="Which orders">
+    <section aria-labelledby="orders-title">
+      <div className="sec-h">
+        <h2 id="orders-title">Orders</h2>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Which orders">
           {(["mine", "all"] as const).map(s => (
             <button
               key={s}
               type="button"
-              className={`btn btn-sm join-item ${effective === s ? "btn-primary" : "btn-outline"}`}
+              className="pick"
               aria-pressed={effective === s}
               disabled={s === "mine" && !address}
               onClick={() => setScope(s)}
@@ -53,16 +51,16 @@ export function OrdersList({
         </div>
       </div>
 
-      {loading && <p className="m-0 mt-4 text-sm text-base-content/70">Reading orders from the desk</p>}
+      {loading && <p className="m-0 mt-4 text-sm text-mute">Reading orders from the desk</p>}
       {!loading && visible.length === 0 && (
-        <p className="m-0 mt-4 text-sm text-base-content/70">
+        <p className="m-0 mt-4 text-sm text-mute">
           {effective === "mine"
             ? "You have not posted an order yet. Post one and it appears here."
             : "The desk has no orders yet."}
         </p>
       )}
 
-      <ul className="m-0 mt-3 list-none divide-y divide-base-300 p-0">
+      <ul className="m-0 list-none divide-y divide-hair p-0">
         {visible.map(({ id, order }) => {
           if (!order) return null;
           const expired = now !== null && order.status === 0 && Number(order.expiry) <= now;
@@ -74,12 +72,15 @@ export function OrdersList({
                 aria-current={selected === id}
                 onClick={() => onSelect(id)}
               >
-                <span className={`block text-sm ${selected === id ? "font-semibold text-primary" : "font-medium"}`}>
+                <span className={`block text-sm ${selected === id ? "font-bold text-ink" : "font-medium text-sub"}`}>
+                  <span aria-hidden className="inline-block w-[2ch] text-link">
+                    {selected === id ? ">" : ""}
+                  </span>
                   #{id.toString()} {fmtEscrow(order.amountIn, order.tokenIn)} for at least{" "}
-                  <span className="font-mono tabular-nums">{fmtToken(order.minOut, order.tokenOut, 6)}</span>
+                  <span className="tabular-nums">{fmtToken(order.minOut, order.tokenOut, 6)}</span>
                 </span>
-                <span className="block text-xs text-base-content/70">
-                  <span className={`font-medium ${STATUS_TONE[order.status]}`}>
+                <span className="block pl-[2ch] text-xs text-mute">
+                  <span className={`font-bold ${STATUS_TONE[order.status]}`}>
                     {expired ? "Open, fallback due" : STATUS[order.status]}
                   </span>{" "}
                   <span aria-hidden>·</span> expiry {fmtDateTime(Number(order.expiry))}

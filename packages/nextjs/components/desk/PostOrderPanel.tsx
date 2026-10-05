@@ -122,22 +122,22 @@ export function PostOrderPanel({ onPosted }: { onPosted: (id: bigint) => void })
   };
 
   return (
-    <section className="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6" aria-labelledby="post-title">
-      <h2 id="post-title" className="m-0 text-xl font-semibold">
-        Post an order
-      </h2>
-      <p className="m-0 mt-1 text-sm text-base-content/70">
+    <section id="post" aria-labelledby="post-title" className="scroll-mt-6">
+      <div className="sec-h">
+        <h2 id="post-title">Post an order</h2>
+      </div>
+      <p className="m-0 mt-3 text-sm text-sub">
         Sell HBAR for a token. Makers bid with signed quotes; if none beats your floor, the swap runs on SaucerSwap.
       </p>
 
-      <fieldset className="m-0 mt-5 border-0 p-0">
-        <legend className="mb-2 p-0 text-sm font-medium">Pair</legend>
-        <div className="join w-full">
+      <fieldset className="m-0 mt-6 border-0 p-0">
+        <legend className="mb-2 p-0 text-sm font-bold">Pair</legend>
+        <div className="flex flex-wrap gap-2">
           {PAIRS.map(p => (
             <button
               key={p.id}
               type="button"
-              className={`btn join-item flex-1 ${p.id === pairId ? "btn-primary" : "btn-outline"}`}
+              className="pick"
               aria-pressed={p.id === pairId}
               onClick={() => setPairId(p.id)}
             >
@@ -147,38 +147,38 @@ export function PostOrderPanel({ onPosted }: { onPosted: (id: bigint) => void })
         </div>
       </fieldset>
 
-      <div className="mt-5">
-        <div className="flex items-baseline justify-between gap-3">
-          <label htmlFor="amount-in" className="text-sm font-medium">
+      <div className="mt-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+          <label htmlFor="amount-in" className="text-sm font-bold">
             Amount to sell
           </label>
-          <span className="text-xs text-base-content/70">
+          <span className="text-xs text-mute">
             {walletTinybar !== undefined ? `Wallet ${fmtHbar(walletTinybar, 2)}` : "Connect to see your balance"}
           </span>
         </div>
-        <label className="input input-lg mt-2 flex w-full items-center gap-2">
+        <label className="field mt-2" aria-invalid={amountText !== "" && amountIn === null}>
           <input
             id="amount-in"
             inputMode="decimal"
             autoComplete="off"
-            className="grow font-mono tabular-nums"
+            className="tabular-nums"
             value={amountText}
             onChange={e => setAmountText(e.target.value)}
             aria-invalid={amountText !== "" && amountIn === null}
           />
-          <span className="text-sm text-base-content/70">HBAR</span>
+          <span className="text-sm text-mute">HBAR</span>
         </label>
       </div>
 
-      <div className="mt-5 grid gap-5 sm:grid-cols-2">
+      <div className="mt-6 grid gap-6">
         <fieldset className="m-0 border-0 p-0">
-          <legend className="mb-2 p-0 text-sm font-medium">Slippage below pool spot</legend>
-          <div className="join w-full">
+          <legend className="mb-2 p-0 text-sm font-bold">Slippage below pool spot</legend>
+          <div className="flex flex-wrap gap-2">
             {SLIPPAGE_OPTIONS_BPS.map(bps => (
               <button
                 key={bps}
                 type="button"
-                className={`btn btn-sm join-item flex-1 ${bps === slippageBps ? "btn-primary" : "btn-outline"}`}
+                className="pick"
                 aria-pressed={bps === slippageBps}
                 onClick={() => setSlippageBps(bps)}
               >
@@ -188,13 +188,13 @@ export function PostOrderPanel({ onPosted }: { onPosted: (id: bigint) => void })
           </div>
         </fieldset>
         <fieldset className="m-0 border-0 p-0">
-          <legend className="mb-2 p-0 text-sm font-medium">Quotes stay open for</legend>
-          <div className="join w-full">
+          <legend className="mb-2 p-0 text-sm font-bold">Quotes stay open for</legend>
+          <div className="flex flex-wrap gap-2">
             {ttlChoices.map(t => (
               <button
                 key={t.seconds}
                 type="button"
-                className={`btn btn-sm join-item flex-1 px-1 ${t.seconds === ttlSeconds ? "btn-primary" : "btn-outline"}`}
+                className="pick"
                 aria-pressed={t.seconds === ttlSeconds}
                 onClick={() => setTtlSeconds(t.seconds)}
               >
@@ -205,38 +205,38 @@ export function PostOrderPanel({ onPosted }: { onPosted: (id: bigint) => void })
         </fieldset>
       </div>
 
-      <dl className="m-0 mt-6 grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 border-t border-base-300 pt-4 text-sm">
-        <dt className="text-base-content/70">SaucerSwap spot</dt>
-        <dd className="m-0 text-right font-mono tabular-nums">
+      <dl className="m-0 mt-8 grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 border-t border-hair pt-4 text-sm">
+        <dt className="text-mute">SaucerSwap spot</dt>
+        <dd className="m-0 text-right tabular-nums">
           {priceOfOne !== undefined
             ? `1 HBAR = ${fmtUnits(priceOfOne, pair.tokenOut.decimals, 5)} ${pair.tokenOut.symbol}`
             : "Reading pool"}
         </dd>
-        <dt className="text-base-content/70">Pool output at this size</dt>
-        <dd className="m-0 text-right font-mono tabular-nums">
+        <dt className="text-mute">Pool output at this size</dt>
+        <dd className="m-0 text-right tabular-nums">
           {poolOut !== undefined ? fmtToken(poolOut, pair.tokenOut.address) : "-"}
         </dd>
-        <dt className="font-medium">Your floor (minimum out)</dt>
-        <dd className="m-0 text-right font-mono font-medium tabular-nums">
+        <dt className="font-bold">Your floor (minimum out)</dt>
+        <dd className="m-0 text-right font-bold tabular-nums">
           {minOut !== undefined ? fmtToken(minOut, pair.tokenOut.address) : "-"}
         </dd>
-        <dt className="text-base-content/70">Escrowed and wrapped</dt>
-        <dd className="m-0 text-right font-mono tabular-nums">{amountIn ? fmtHbar(amountIn) : "-"}</dd>
-        <dt className="text-base-content/70">Fuel for the fallback, returned on fill or cancel</dt>
-        <dd className="m-0 text-right font-mono tabular-nums">{fuel !== undefined ? fmtHbar(fuel) : "-"}</dd>
-        <dt className="text-base-content/70">Sent from your wallet</dt>
-        <dd className="m-0 text-right font-mono tabular-nums">{total !== undefined ? fmtHbar(total) : "-"}</dd>
+        <dt className="text-mute">Escrowed and wrapped</dt>
+        <dd className="m-0 text-right tabular-nums">{amountIn ? fmtHbar(amountIn) : "-"}</dd>
+        <dt className="text-mute">Fuel for the fallback, returned on fill or cancel</dt>
+        <dd className="m-0 text-right tabular-nums">{fuel !== undefined ? fmtHbar(fuel) : "-"}</dd>
+        <dt className="text-mute">Sent from your wallet</dt>
+        <dd className="m-0 text-right tabular-nums">{total !== undefined ? fmtHbar(total) : "-"}</dd>
       </dl>
 
-      <div className="mt-5 flex flex-col gap-4">
+      <div className="mt-8 flex flex-col gap-4">
         <AssociationWarning state={association} />
         <TxSteps steps={steps} runs={tx.runs} />
         <WalletGate ready={ready}>
-          <button type="button" className="btn btn-primary w-full" onClick={post} disabled={!!blocker || tx.running}>
+          <button type="button" className="act act-block" onClick={post} disabled={!!blocker || tx.running}>
             {tx.running ? "Working" : "Post order"}
           </button>
         </WalletGate>
-        {blocker && ready.isConnected && <p className="m-0 text-sm text-base-content/70">{blocker}</p>}
+        {blocker && ready.isConnected && <p className="m-0 text-sm text-mute">{blocker}</p>}
       </div>
     </section>
   );

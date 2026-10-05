@@ -34,7 +34,7 @@ const STATUS_LABEL: Record<(typeof STATUS)[number], string> = {
   Refunded: "Refunded",
 };
 
-const STATUS_TONE = ["text-primary", "text-success", "text-success", "text-base-content/70", "text-warning"];
+const STATUS_TONE = ["text-link", "text-ok", "text-ok", "text-mute", "text-warn"];
 
 const VERDICT_TEXT: Record<Verdict, string> = {
   live: "Signature verified, ready to accept",
@@ -66,8 +66,8 @@ export function OrderBoard({ id }: { id: bigint }) {
 
   if (orderError) {
     return (
-      <section className="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
-        <p className="m-0 text-sm text-error" role="alert">
+      <section className="tui px-5 py-8 sm:px-8">
+        <p className="m-0 text-sm text-bad" role="alert">
           Order #{id.toString()} could not be read from the desk.
         </p>
       </section>
@@ -75,8 +75,8 @@ export function OrderBoard({ id }: { id: bigint }) {
   }
   if (!order || order.taker === "0x0000000000000000000000000000000000000000") {
     return (
-      <section className="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6" aria-busy={!order}>
-        <p className="m-0 text-sm text-base-content/70">
+      <section className="tui px-5 py-8 sm:px-8" aria-busy={!order}>
+        <p className="m-0 text-sm text-mute">
           {order ? `The desk has no order #${id.toString()}.` : `Reading order #${id.toString()}`}
         </p>
       </section>
@@ -98,68 +98,115 @@ export function OrderBoard({ id }: { id: bigint }) {
         : null;
 
   return (
-    <section className="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6" aria-labelledby="board-title">
-      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-        <div className="min-w-0">
-          <h2 id="board-title" className="m-0 text-xl font-semibold">
-            Order #{id.toString()}{" "}
-            <span className={`text-base font-medium ${STATUS_TONE[order.status]}`}>
-              {STATUS_LABEL[STATUS[order.status]]}
-            </span>
-          </h2>
-          <p className="m-0 mt-1 text-sm">
-            <span className="font-mono tabular-nums">{fmtEscrow(order.amountIn, order.tokenIn)}</span> for at least{" "}
-            <span className="font-mono tabular-nums">{fmtToken(order.minOut, order.tokenOut, 6)}</span>
-          </p>
-          <p className="m-0 mt-1 text-xs text-base-content/70">
-            Taker{" "}
-            <a className="link" href={hashscan.account(order.taker)} target="_blank" rel="noreferrer">
-              {shortAddress(order.taker)}
-            </a>
-            {settled && (
-              <>
-                {" "}
-                <span aria-hidden>·</span>{" "}
-                <a className="link" href={hashscan.tx(settled.hash)} target="_blank" rel="noreferrer">
-                  {STATUS[order.status]} on HashScan
-                </a>
-              </>
-            )}
-          </p>
+    <section className="tui" aria-labelledby="board-title">
+      <div className="px-5 py-6 sm:px-8 sm:py-8">
+        <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+          <div className="min-w-0">
+            <h2 id="board-title" className="m-0 text-base font-bold">
+              Order #{id.toString()}{" "}
+              <span className={`ml-1 font-normal ${STATUS_TONE[order.status]}`}>
+                [{STATUS_LABEL[STATUS[order.status]]}]
+              </span>
+            </h2>
+            <p className="m-0 mt-2 text-xl font-bold leading-snug sm:text-[1.5rem]">
+              <span className="tabular-nums">{fmtEscrow(order.amountIn, order.tokenIn)}</span>{" "}
+              <span className="font-normal text-mute">for at least</span>{" "}
+              <span className="tabular-nums">{fmtToken(order.minOut, order.tokenOut, 6)}</span>
+            </p>
+            <p className="m-0 mt-2 text-xs text-mute">
+              Taker{" "}
+              <a className="link" href={hashscan.account(order.taker)} target="_blank" rel="noreferrer">
+                {shortAddress(order.taker)}
+              </a>
+              {settled && (
+                <>
+                  {" "}
+                  <span aria-hidden>·</span>{" "}
+                  <a className="link" href={hashscan.tx(settled.hash)} target="_blank" rel="noreferrer">
+                    {STATUS[order.status]} on HashScan
+                  </a>
+                </>
+              )}
+            </p>
+          </div>
+          <OrderActions id={id} order={order} />
         </div>
-        <OrderActions id={id} order={order} />
+
+        <FallbackClock
+          order={order}
+          now={now}
+          postedAt={posted?.at}
+          scheduleAddress={scheduleAddress}
+          schedule={schedule.data}
+          scheduleError={schedule.isError}
+        />
+
+        <Ladder
+          id={id}
+          order={order}
+          now={now}
+          board={board}
+          fallbackRef={fallbackRef}
+          settledMaker={settled?.name === "Filled" ? (settled.args.maker as string) : undefined}
+          settledAmount={settled?.name === "Filled" ? (settled.args.amountOut as bigint) : undefined}
+        />
       </div>
-
-      <FallbackClock
-        order={order}
-        now={now}
-        scheduleAddress={scheduleAddress}
-        schedule={schedule.data}
-        scheduleError={schedule.isError}
-      />
-
-      <Ladder
-        id={id}
-        order={order}
-        now={now}
-        board={board}
-        fallbackRef={fallbackRef}
-        settledMaker={settled?.name === "Filled" ? (settled.args.maker as string) : undefined}
-        settledAmount={settled?.name === "Filled" ? (settled.args.amountOut as bigint) : undefined}
-      />
     </section>
+  );
+}
+
+const BAR_CELLS = 24;
+
+/** A block-character bar: how far the clock has run between posting and its deadline. */
+function Bar({ now, from, to }: { now: number | null; from: number | undefined; to: number | null }) {
+  if (now === null || from === undefined || to === null || to <= from) return null;
+  const filled = Math.round(Math.min(1, Math.max(0, (now - from) / (to - from))) * BAR_CELLS);
+  return (
+    <div aria-hidden className="mt-3 overflow-hidden whitespace-nowrap text-sm leading-none">
+      <span className="text-fg">{"█".repeat(filled)}</span>
+      <span className="text-mute">{"░".repeat(BAR_CELLS - filled)}</span>
+    </div>
+  );
+}
+
+function Clock({
+  label,
+  value,
+  live,
+  children,
+  bar,
+}: {
+  label: string;
+  value: string;
+  live: boolean;
+  children: React.ReactNode;
+  bar: React.ReactNode;
+}) {
+  return (
+    <div className="min-w-0">
+      <p className="m-0 text-xs text-mute">{label}</p>
+      <p
+        className={`m-0 mt-1 text-[1.875rem] font-bold leading-tight tabular-nums sm:text-[2.375rem] ${live ? "caret" : ""}`}
+      >
+        {value}
+      </p>
+      {bar}
+      <p className="m-0 mt-3 text-xs text-mute">{children}</p>
+    </div>
   );
 }
 
 function FallbackClock({
   order,
   now,
+  postedAt,
   scheduleAddress,
   schedule,
   scheduleError,
 }: {
   order: Order;
   now: number | null;
+  postedAt: number | undefined;
   scheduleAddress: Address | undefined;
   schedule: ReturnType<typeof useSchedule>["data"];
   scheduleError: boolean;
@@ -176,7 +223,7 @@ function FallbackClock({
   if (!open) {
     const ran = schedule?.executed_timestamp ? `Ran at ${fmtDateTime(secondsOf(schedule.executed_timestamp))}.` : null;
     return (
-      <div className="mt-5 border-t border-base-300 pt-4 text-sm text-base-content/70">
+      <div className="mt-6 border-t border-hair pt-4 text-sm text-mute">
         {scheduleAddress ? (
           <p className="m-0">
             Fallback schedule: {ran ?? (schedule?.deleted ? "deleted when the order settled." : "not run.")}{" "}
@@ -191,33 +238,36 @@ function FallbackClock({
 
   const untilClose = now === null ? null : quotesCloseAt - now;
   const untilFallback = now === null || fallbackAt === null ? null : fallbackAt - now;
+
   return (
-    <div className="mt-5 grid gap-4 border-t border-base-300 pt-4 sm:grid-cols-2">
-      <div>
-        <p className="m-0 text-xs text-base-content/70">Quotes can be accepted for</p>
-        <p className="m-0 mt-1 font-mono text-2xl tabular-nums">
-          {untilClose === null ? "-" : untilClose > 0 ? fmtDuration(untilClose) : "Closed"}
-        </p>
-        <p className="m-0 mt-1 text-xs text-base-content/70">until {fmtDateTime(quotesCloseAt)} (the order expiry)</p>
-      </div>
-      <div>
-        <p className="m-0 text-xs text-base-content/70">Scheduled fallback swap in</p>
-        <p className="m-0 mt-1 font-mono text-2xl tabular-nums">
-          {untilFallback === null
+    <div className="mt-8 grid gap-8 border-t border-hair pt-6 md:grid-cols-2 md:gap-12">
+      <Clock
+        label="Quotes can be accepted for"
+        value={untilClose === null ? "-" : untilClose > 0 ? fmtDuration(untilClose) : "Closed"}
+        live={untilClose !== null && untilClose > 0}
+        bar={<Bar now={now} from={postedAt} to={quotesCloseAt} />}
+      >
+        until {fmtDateTime(quotesCloseAt)} (the order expiry)
+      </Clock>
+      <Clock
+        label="The gavel falls in (scheduled fallback swap)"
+        value={
+          untilFallback === null
             ? scheduleError
               ? "Unavailable"
               : "-"
             : untilFallback > 0
               ? fmtDuration(untilFallback)
-              : "Due"}
-        </p>
-        <p className="m-0 mt-1 text-xs text-base-content/70">
-          {untilFallback !== null && untilFallback <= 0
-            ? "The network runs it at consensus. This page updates when it lands. "
-            : "Pays at least the floor, whatever the makers do. "}
-          {scheduleLink}
-        </p>
-      </div>
+              : "Due"
+        }
+        live={untilFallback !== null && untilFallback > 0}
+        bar={<Bar now={now} from={postedAt} to={fallbackAt} />}
+      >
+        {untilFallback !== null && untilFallback <= 0
+          ? "The network runs it at consensus. This page updates when it lands. "
+          : "Pays at least the floor, whatever the makers do. "}
+        {scheduleLink}
+      </Clock>
     </div>
   );
 }
@@ -289,11 +339,15 @@ function Ladder({
   const shown = rows.slice(0, MAX_ROWS);
   const tokenOutSymbol = tokenOf(order.tokenOut)?.symbol ?? "tokens";
 
+  const COLS = "lg:grid-cols-[2ch_minmax(0,19ch)_9ch_11ch_12ch_19ch_minmax(0,1fr)_8rem] lg:items-baseline";
+
   return (
-    <div className="mt-6 border-t border-base-300 pt-5">
+    <div className="mt-10 border-t border-hair pt-6">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 className="m-0 text-lg font-semibold">Quotes from makers</h3>
-        <span className="text-xs text-base-content/70">
+        <h3 className="m-0 text-base font-bold">
+          <span className="font-normal text-mute">[+]</span> Quote tape
+        </h3>
+        <span className="text-xs text-mute">
           Read from topic{" "}
           <a className="link" href={hashscan.topic(QUOTE_TOPIC_ID)} target="_blank" rel="noreferrer">
             {QUOTE_TOPIC_ID}
@@ -302,9 +356,9 @@ function Ladder({
         </span>
       </div>
 
-      {board.isLoading && <p className="m-0 mt-4 text-sm text-base-content/70">Reading the quote topic</p>}
+      {board.isLoading && <p className="m-0 mt-4 text-sm text-mute">Reading the quote topic</p>}
       {board.isError && (
-        <p className="m-0 mt-4 text-sm text-error" role="alert">
+        <p className="m-0 mt-4 text-sm text-bad" role="alert">
           Could not read the quote topic.{" "}
           <button type="button" className="link" onClick={() => void board.refetch()}>
             Retry
@@ -312,102 +366,117 @@ function Ladder({
         </p>
       )}
       {board.data && rows.length === 0 && (
-        <p className="m-0 mt-4 text-sm text-base-content/70">
+        <p className="m-0 mt-4 text-sm text-mute">
           No maker has quoted this order in the {board.data.messagesRead} messages on the topic. The fallback swap is
           booked either way.
         </p>
       )}
-
       {open && !isTaker && rows.length > 0 && (
-        <p className="m-0 mt-3 text-sm text-base-content/70">
-          Only the account that posted this order can accept a quote.
-        </p>
+        <p className="m-0 mt-3 text-sm text-mute">Only the account that posted this order can accept a quote.</p>
       )}
 
       {shown.length > 0 && (
-        <ol className="m-0 mt-3 list-none divide-y divide-base-300 p-0">
-          {shown.map(({ q, verdict }, i) => {
-            const vsFloor = bpsOver(q.amountOut, order.minOut);
-            const vsFallback = fallbackRef ? bpsOver(q.amountOut, fallbackRef.amount) : null;
-            const wasFill = settledMaker?.toLowerCase() === q.maker.toLowerCase() && settledAmount === q.amountOut;
-            const dim = verdict !== "live" && !wasFill;
-            return (
-              <li key={`${q.sequence}`} className={`py-3 ${dim ? "opacity-75" : ""}`}>
-                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-                  <div className="flex min-w-0 items-baseline gap-3">
-                    <span className="font-mono text-lg font-medium tabular-nums">
-                      {fmtToken(q.amountOut, order.tokenOut, 6)}
+        <div className="mt-4 text-[0.8125rem]">
+          <div
+            aria-hidden
+            className={`hidden gap-x-3 border-b border-hair px-3 pb-2 text-xs text-mute lg:grid ${COLS}`}
+          >
+            <span />
+            <span>Amount out</span>
+            <span>Over floor</span>
+            <span>{fallbackRef ? fallbackRef.label : "vs pool"}</span>
+            <span>Maker</span>
+            <span>Consensus time</span>
+            <span>State</span>
+            <span />
+          </div>
+          <ol className="m-0 list-none p-0">
+            {shown.map(({ q, verdict }, i) => {
+              const vsFloor = bpsOver(q.amountOut, order.minOut);
+              const vsFallback = fallbackRef ? bpsOver(q.amountOut, fallbackRef.amount) : null;
+              const wasFill = settledMaker?.toLowerCase() === q.maker.toLowerCase() && settledAmount === q.amountOut;
+              const best = i === bestIndex;
+              const live = verdict === "live";
+              const stateTone = wasFill || live ? "text-ok" : verdict === "bad-signature" ? "text-bad" : "text-mute";
+              const stateMark = wasFill || live ? "[x]" : verdict === "bad-signature" ? "[!]" : "[-]";
+              return (
+                <li
+                  key={`${q.sequence}`}
+                  className={`print-in grid grid-cols-2 gap-x-3 gap-y-1 border-b border-hair px-3 py-3 ${COLS} ${
+                    best ? "bg-dark-2 shadow-[inset_2px_0_0_var(--tone-link)]" : ""
+                  }`}
+                  style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}
+                >
+                  <span aria-hidden className="hidden font-bold text-link lg:block">
+                    {best ? ">" : ""}
+                  </span>
+                  <span
+                    className={`col-span-2 text-base font-bold tabular-nums lg:col-span-1 ${
+                      live || wasFill ? "text-fg" : "text-mute"
+                    }`}
+                  >
+                    {fmtToken(q.amountOut, order.tokenOut, 6)}
+                    {best && <span className="ml-2 text-xs font-bold text-link">best</span>}
+                  </span>
+                  <span className="cell tabular-nums" data-l="over floor">
+                    {vsFloor === null ? "-" : fmtSignedBps(vsFloor)}
+                  </span>
+                  <span className="cell tabular-nums" data-l={fallbackRef ? fallbackRef.label : "vs pool"}>
+                    {vsFallback === null ? "-" : `${vsFallback > 0 ? "+" : ""}${vsFallback} bps`}
+                  </span>
+                  <span className="cell col-span-2 lg:col-span-1" data-l="maker">
+                    <a className="link" href={hashscan.account(q.maker)} target="_blank" rel="noreferrer">
+                      {shortAddress(q.maker)}
+                    </a>
+                  </span>
+                  <span
+                    className="cell col-span-2 tabular-nums lg:col-span-1"
+                    data-l="consensus"
+                    title={`HCS message ${q.sequence}`}
+                  >
+                    {q.consensusTimestamp}
+                  </span>
+                  <span className="col-span-2 min-w-0 lg:col-span-1">
+                    <span className={stateTone}>{stateMark}</span>{" "}
+                    <span className={live || wasFill ? "text-fg" : "text-sub"}>
+                      {wasFill ? "This quote settled the order." : VERDICT_TEXT[verdict]}
                     </span>
-                    {i === bestIndex && <span className="text-xs font-semibold text-primary">Best</span>}
-                    {wasFill && <span className="text-xs font-semibold text-success">Filled this order</span>}
-                  </div>
-                  {open && isTaker && verdict === "live" && now !== null && now < Number(order.expiry) && (
-                    <div className="w-full sm:w-auto">
+                    <span className="block text-xs text-mute">
+                      signature {q.signatureOk ? "ok" : "bad"} <span aria-hidden>·</span> deadline{" "}
+                      {fmtDateTime(Number(q.deadline))}
+                    </span>
+                  </span>
+                  <span className="col-span-2 lg:col-span-1">
+                    {open && isTaker && live && now !== null && now < Number(order.expiry) && (
                       <WalletGate ready={ready}>
                         <button
                           type="button"
-                          className={`btn btn-sm w-full ${i === bestIndex ? "btn-primary" : "btn-outline"}`}
+                          className={`act act-sm act-block ${best ? "" : "act-line"}`}
                           disabled={tx.running}
                           onClick={() => accept(q)}
                         >
-                          Accept this quote
+                          Accept quote
                         </button>
                       </WalletGate>
-                    </div>
-                  )}
-                </div>
-                <dl className="m-0 mt-1 grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-base-content/70 sm:grid-cols-4">
-                  <div>
-                    <dt className="inline">Over floor </dt>
-                    <dd className="m-0 inline font-mono tabular-nums">
-                      {vsFloor === null ? "-" : fmtSignedBps(vsFloor)}
-                    </dd>
-                  </div>
-                  {fallbackRef && (
-                    <div>
-                      <dt className="inline">{fallbackRef!.label} </dt>
-                      <dd className="m-0 inline font-mono tabular-nums">
-                        {vsFallback === null ? "-" : `${vsFallback > 0 ? "+" : ""}${vsFallback} bps`}
-                      </dd>
-                    </div>
-                  )}
-                  <div>
-                    <dt className="inline">Maker </dt>
-                    <dd className="m-0 inline">
-                      <a className="link" href={hashscan.account(q.maker)} target="_blank" rel="noreferrer">
-                        {shortAddress(q.maker)}
-                      </a>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="inline">Consensus </dt>
-                    <dd className="m-0 inline font-mono tabular-nums" title={`HCS message ${q.sequence}`}>
-                      {q.consensusTimestamp}
-                    </dd>
-                  </div>
-                </dl>
-                <p className={`m-0 mt-1 text-xs ${verdict === "live" ? "text-success" : "text-base-content/70"}`}>
-                  {wasFill ? "This quote settled the order." : VERDICT_TEXT[verdict]} <span aria-hidden>·</span>{" "}
-                  deadline {fmtDateTime(Number(q.deadline))}
-                </p>
-              </li>
-            );
-          })}
-        </ol>
+                    )}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
       )}
       {rows.length > MAX_ROWS && (
-        <p className="m-0 mt-2 text-xs text-base-content/70">{rows.length - MAX_ROWS} lower quotes not shown.</p>
+        <p className="m-0 mt-2 text-xs text-mute">{rows.length - MAX_ROWS} lower quotes not shown.</p>
       )}
 
-      <dl className="m-0 mt-3 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 border-t border-base-300 pt-3 text-sm">
-        <dt className="font-medium">Fallback floor (guaranteed minimum)</dt>
-        <dd className="m-0 text-right font-mono font-medium tabular-nums">
-          {fmtToken(order.minOut, order.tokenOut, 6)}
-        </dd>
+      <dl className="m-0 mt-6 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm">
+        <dt className="font-bold">Fallback floor (guaranteed minimum)</dt>
+        <dd className="m-0 text-right font-bold tabular-nums">{fmtToken(order.minOut, order.tokenOut, 6)}</dd>
         {fallbackRef && (
           <>
-            <dt className="text-base-content/70">{open ? "Pool spot output now" : "Fallback paid"}</dt>
-            <dd className="m-0 text-right font-mono tabular-nums">{fmtToken(fallbackRef.amount, order.tokenOut, 6)}</dd>
+            <dt className="text-mute">{open ? "Pool spot output now" : "Fallback paid"}</dt>
+            <dd className="m-0 text-right tabular-nums">{fmtToken(fallbackRef.amount, order.tokenOut, 6)}</dd>
           </>
         )}
       </dl>

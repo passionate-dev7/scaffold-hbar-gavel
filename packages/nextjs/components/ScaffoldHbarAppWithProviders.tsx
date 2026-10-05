@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
+import { RainbowKitProvider, lightTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
-import { useTheme } from "next-themes";
 import { Toaster } from "react-hot-toast";
 import { hederaTestnet } from "viem/chains";
 import { WagmiProvider } from "wagmi";
@@ -37,43 +35,19 @@ export const queryClient = new QueryClient({
 });
 
 export const ScaffoldHbarAppWithProviders = ({ children }: { children: React.ReactNode }) => {
-  const { resolvedTheme } = useTheme();
-  const isDarkMode = resolvedTheme === "dark";
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const rainbowKitTheme = mounted
-    ? isDarkMode
-      ? darkTheme({
-          accentColor: "#8259ef",
-          accentColorForeground: "white",
-          borderRadius: "large",
-          fontStack: "system",
-          overlayBlur: "small",
-        })
-      : lightTheme({
-          accentColor: "#4f46e5",
-          accentColorForeground: "white",
-          borderRadius: "large",
-          fontStack: "system",
-          overlayBlur: "small",
-        })
-    : lightTheme({
-        accentColor: "#4f46e5",
-        accentColorForeground: "white",
-        borderRadius: "large",
-        fontStack: "system",
-        overlayBlur: "small",
-      });
+  const rainbowKitTheme = lightTheme({
+    accentColor: "#201d1d",
+    accentColorForeground: "#fdfcfc",
+    borderRadius: "small",
+    fontStack: "system",
+    overlayBlur: "none",
+  });
 
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <ProgressBar height="3px" color="#2299dd" />
-        <RainbowKitProvider avatar={BlockieAvatar} coolMode initialChain={hederaTestnet} theme={rainbowKitTheme}>
+        <ProgressBar height="2px" color="#201d1d" />
+        <RainbowKitProvider avatar={BlockieAvatar} initialChain={hederaTestnet} theme={rainbowKitTheme}>
           <ScaffoldHbarApp>{children}</ScaffoldHbarApp>
         </RainbowKitProvider>
       </QueryClientProvider>

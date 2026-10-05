@@ -61,7 +61,7 @@ export const SetBurnerPKModal = () => {
           </label>
 
           <div className="flex items-center gap-3 mb-5">
-            <div className="p-2 rounded-xl hedera-gradient">
+            <div className="p-2 rounded bg-ink text-canvas">
               <KeyIcon className="h-5 w-5 text-white" />
             </div>
             <h3 className="text-base font-semibold text-base-content m-0">Set Burner Wallet Private Key</h3>

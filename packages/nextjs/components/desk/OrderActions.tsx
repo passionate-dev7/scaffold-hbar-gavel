@@ -64,19 +64,19 @@ export function OrderActions({ id, order }: { id: bigint; order: Order }) {
       <WalletGate ready={ready}>
         <div className="flex flex-wrap gap-2">
           {canCancel && (
-            <button type="button" className="btn btn-outline btn-error btn-sm" onClick={cancel} disabled={tx.running}>
+            <button type="button" className="act act-sm act-danger" onClick={cancel} disabled={tx.running}>
               Cancel order
             </button>
           )}
           {canClaim && (
-            <button type="button" className="btn btn-outline btn-primary btn-sm" onClick={claim} disabled={tx.running}>
+            <button type="button" className="act act-sm act-line" onClick={claim} disabled={tx.running}>
               Claim {fmtEscrow(order.claimable, order.tokenIn)}
             </button>
           )}
         </div>
       </WalletGate>
       {run && (
-        <p className={`m-0 text-xs ${run.status === "failed" ? "text-error" : "text-base-content/70"}`} role="status">
+        <p className={`m-0 text-xs ${run.status === "failed" ? "text-bad" : "text-mute"}`} role="status">
           {run.status === "failed" ? run.error : STEP_TEXT[run.status]}{" "}
           {run.hash && (
             <a className="link" href={hashscan.tx(run.hash)} target="_blank" rel="noreferrer">

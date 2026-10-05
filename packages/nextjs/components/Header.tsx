@@ -1,34 +1,29 @@
 "use client";
 
-import React, { useRef } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bars3Icon, BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { Mark } from "~~/components/desk/Mark";
 import { RainbowKitCustomConnectButton } from "~~/components/scaffold-hbar";
-import { useOutsideClick } from "~~/hooks/scaffold-hbar";
 import { PRODUCT_NAME } from "~~/utils/desk/constants";
 
 type HeaderMenuLink = {
   label: string;
   href: string;
-  icon?: React.ReactNode;
 };
 
 export const menuLinks: HeaderMenuLink[] = [
   {
-    label: "Fund",
+    label: "Desk",
     href: "/",
   },
   {
-    label: "Debug Contracts",
+    label: "Debug",
     href: "/debug",
-    icon: <BugAntIcon className="h-4 w-4" />,
   },
   {
-    label: "Block Explorer",
+    label: "Explorer",
     href: "/blockexplorer",
-    icon: <MagnifyingGlassIcon className="h-4 w-4" />,
   },
 ];
 
@@ -37,20 +32,18 @@ export const HeaderMenuLinks = () => {
 
   return (
     <>
-      {menuLinks.map(({ label, href, icon }) => {
+      {menuLinks.map(({ label, href }) => {
         const isActive = href === "/" ? pathname === href : pathname.startsWith(href);
         return (
-          <li key={href}>
+          <li key={href} className="list-none">
             <Link
               href={href}
-              passHref
               aria-current={isActive ? "page" : undefined}
-              className={`${
-                isActive ? "bg-primary/10 text-primary font-semibold" : "hover:bg-primary/5"
-              } py-1.5 px-3 text-sm rounded-lg gap-2 grid grid-flow-col transition-colors`}
+              className={`inline-flex min-h-9 items-center border-b-2 px-3 text-sm ${
+                isActive ? "border-ash font-bold text-ink" : "border-transparent text-mute hover:text-ink"
+              }`}
             >
-              {icon}
-              <span>{label}</span>
+              {label}
             </Link>
           </li>
         );
@@ -63,43 +56,29 @@ export const HeaderMenuLinks = () => {
  * Site header
  */
 export const Header = () => {
-  const burgerMenuRef = useRef<HTMLDetailsElement>(null);
-  useOutsideClick(burgerMenuRef, () => {
-    burgerMenuRef?.current?.removeAttribute("open");
-  });
-
   return (
-    <div className="sticky lg:static top-0 navbar bg-base-100 min-h-0 shrink-0 justify-between z-20 border-b border-base-300 px-0 sm:px-2">
-      <div className="navbar-start w-auto lg:w-1/2">
-        <details className="dropdown" ref={burgerMenuRef}>
-          <summary className="ml-1 btn btn-ghost lg:hidden hover:bg-transparent" aria-label="Open menu">
-            <Bars3Icon className="h-1/2" />
-          </summary>
-          <ul
-            className="menu menu-compact dropdown-content mt-3 p-2 border border-base-300 bg-base-100 rounded-box w-52"
-            onClick={() => {
-              burgerMenuRef?.current?.removeAttribute("open");
-            }}
-          >
+    <header className="z-20 shrink-0 border-b border-hair bg-canvas">
+      <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-x-6 px-4 sm:px-6 lg:h-14 lg:flex-nowrap">
+        <div className="flex h-14 items-center gap-8">
+          <Link href="/" aria-label={`${PRODUCT_NAME} home`} className="flex shrink-0 items-center gap-3 text-ink">
+            <Mark className="h-6 w-6" />
+            <span className="font-bold">{PRODUCT_NAME}</span>
+          </Link>
+          <nav aria-label="Main" className="hidden lg:block">
+            <ul className="m-0 flex list-none gap-1 p-0">
+              <HeaderMenuLinks />
+            </ul>
+          </nav>
+        </div>
+        <div className="flex h-14 items-center">
+          <RainbowKitCustomConnectButton />
+        </div>
+        <nav aria-label="Main" className="w-full border-t border-hair lg:hidden">
+          <ul className="m-0 flex list-none gap-1 p-0 pb-1 pt-1">
             <HeaderMenuLinks />
           </ul>
-        </details>
-        <Link
-          href="/"
-          passHref
-          aria-label={`${PRODUCT_NAME} home`}
-          className="flex items-center gap-3 mx-1 lg:ml-4 lg:mr-6 shrink-0"
-        >
-          <Mark className="h-8 w-8" />
-          <span className="hidden font-semibold leading-tight text-base tracking-tight sm:inline">{PRODUCT_NAME}</span>
-        </Link>
-        <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">
-          <HeaderMenuLinks />
-        </ul>
+        </nav>
       </div>
-      <div className="navbar-end grow mr-4">
-        <RainbowKitCustomConnectButton />
-      </div>
-    </div>
+    </header>
   );
 };

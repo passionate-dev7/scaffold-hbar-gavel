@@ -13,7 +13,7 @@ export function WalletGate({
     return (
       <ConnectButton.Custom>
         {({ openConnectModal }) => (
-          <button type="button" className="btn btn-primary w-full" onClick={openConnectModal}>
+          <button type="button" className="act act-block" onClick={openConnectModal}>
             Connect a wallet
           </button>
         )}
@@ -22,12 +22,7 @@ export function WalletGate({
   }
   if (!ready.onTarget) {
     return (
-      <button
-        type="button"
-        className="btn btn-primary w-full"
-        onClick={ready.switchToTarget}
-        disabled={ready.switching}
-      >
+      <button type="button" className="act act-block" onClick={ready.switchToTarget} disabled={ready.switching}>
         Switch to Hedera Testnet
       </button>
     );
